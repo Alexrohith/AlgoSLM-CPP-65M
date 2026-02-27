@@ -1,0 +1,10 @@
+algoenv/
+__pycache__/
+*.pyc
+*.pth
+*.pt
+*.ckpt
+*.bin
+data/
+*.log
+.DS_Store
