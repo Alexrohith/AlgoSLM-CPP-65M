@@ -1,0 +1,4625 @@
+================================================================================
+ALGORITHM REASONING DATASET — 200 C++ PROBLEMS
+For SLM Fine-Tuning | Categories: Search, Graph, DP, Greedy, DS, Misc
+================================================================================
+
+================================================================================
+CATEGORY 1: BINARY SEARCH (Problems 1–15)
+================================================================================
+
+--- Problem 1 ---
+TITLE: Classic Binary Search
+DIFFICULTY: Easy
+PROBLEM: Given a sorted array of integers and a target value, return the index of the target or -1 if not found.
+INPUT: nums = [1, 3, 5, 7, 9, 11], target = 7
+OUTPUT: 3
+REASONING:
+Step 1: Set lo=0, hi=5.
+Step 2: mid = (0+5)/2 = 2, nums[2]=5 < 7, so lo=3.
+Step 3: mid = (3+5)/2 = 4, nums[4]=9 > 7, so hi=3.
+Step 4: mid = (3+3)/2 = 3, nums[3]=7 == 7. Return 3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int binarySearch(vector<int>& nums, int target) {
+    int lo = 0, hi = nums.size() - 1;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (nums[mid] == target) return mid;
+        else if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return -1;
+}
+int main() {
+    vector<int> nums = {1,3,5,7,9,11};
+    cout << binarySearch(nums, 7) << endl; // 3
+}
+```
+
+--- Problem 2 ---
+TITLE: Lower Bound
+DIFFICULTY: Easy
+PROBLEM: Given a sorted array, find the index of the first element >= target.
+INPUT: nums = [1, 3, 5, 7, 9], target = 6
+OUTPUT: 3
+REASONING:
+Step 1: We want the leftmost position where nums[i] >= 6.
+Step 2: lo=0, hi=5 (one past end).
+Step 3: mid=2, nums[2]=5 < 6, lo=3.
+Step 4: mid=4, nums[4]=9 >= 6, hi=4.
+Step 5: mid=3, nums[3]=7 >= 6, hi=3.
+Step 6: lo==hi==3. Return 3. nums[3]=7 is first element >= 6.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int lowerBound(vector<int>& nums, int target) {
+    int lo = 0, hi = nums.size();
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}
+int main() {
+    vector<int> nums = {1,3,5,7,9};
+    cout << lowerBound(nums, 6) << endl; // 3
+}
+```
+
+--- Problem 3 ---
+TITLE: Upper Bound
+DIFFICULTY: Easy
+PROBLEM: Given a sorted array, find the index of the first element > target.
+INPUT: nums = [1, 3, 5, 7, 7, 9], target = 7
+OUTPUT: 5
+REASONING:
+Step 1: We want first index where nums[i] > 7.
+Step 2: lo=0, hi=6.
+Step 3: mid=3, nums[3]=7, not >7, lo=4.
+Step 4: mid=5, nums[5]=9 > 7, hi=5.
+Step 5: mid=4, nums[4]=7, not >7, lo=5.
+Step 6: lo==hi==5. Return 5.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int upperBound(vector<int>& nums, int target) {
+    int lo = 0, hi = nums.size();
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (nums[mid] <= target) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}
+int main() {
+    vector<int> nums = {1,3,5,7,7,9};
+    cout << upperBound(nums, 7) << endl; // 5
+}
+```
+
+--- Problem 4 ---
+TITLE: Binary Search on Answer — Minimum Max Subarray Sum
+DIFFICULTY: Medium
+PROBLEM: Split array of n integers into k subarrays to minimize the maximum subarray sum.
+INPUT: nums = [7,2,5,10,8], k = 2
+OUTPUT: 18
+REASONING:
+Step 1: The answer lies in [max(nums), sum(nums)] = [10, 32].
+Step 2: Binary search on the answer 'mid'. Check if we can split into <= k parts each with sum <= mid.
+Step 3: mid=21: greedily split -> [7,2,5] sum=14, [10,8] sum=18. 2 parts <= k=2. hi=21.
+Step 4: mid=15: [7,2,5] sum=14, [10] sum=10, [8] sum=8. 3 parts > k=2. lo=16.
+Step 5: mid=18: [7,2,5] sum=14, [10,8] sum=18. 2 parts <= 2. hi=18.
+Step 6: lo==hi==18. Answer is 18.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canSplit(vector<int>& nums, int k, long long maxSum) {
+    int parts = 1; long long cur = 0;
+    for (int x : nums) {
+        if (x > maxSum) return false;
+        if (cur + x > maxSum) { parts++; cur = x; }
+        else cur += x;
+    }
+    return parts <= k;
+}
+int splitArray(vector<int>& nums, int k) {
+    long long lo = *max_element(nums.begin(), nums.end());
+    long long hi = accumulate(nums.begin(), nums.end(), 0LL);
+    while (lo < hi) {
+        long long mid = lo + (hi - lo) / 2;
+        if (canSplit(nums, k, mid)) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
+int main() {
+    vector<int> nums = {7,2,5,10,8};
+    cout << splitArray(nums, 2) << endl; // 18
+}
+```
+
+--- Problem 5 ---
+TITLE: Find First and Last Position of Element
+DIFFICULTY: Medium
+PROBLEM: Given sorted array, find starting and ending position of target.
+INPUT: nums = [5,7,7,8,8,10], target = 8
+OUTPUT: [3, 4]
+REASONING:
+Step 1: Use lower_bound to find first position >= 8. Result = 3.
+Step 2: Use upper_bound to find first position > 8. Result = 5. Last position = 5-1 = 4.
+Step 3: Check nums[3]==8. Valid. Return [3,4].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> searchRange(vector<int>& nums, int target) {
+    int lo = lower_bound(nums.begin(), nums.end(), target) - nums.begin();
+    if (lo == nums.size() || nums[lo] != target) return {-1, -1};
+    int hi = upper_bound(nums.begin(), nums.end(), target) - nums.begin() - 1;
+    return {lo, hi};
+}
+int main() {
+    vector<int> nums = {5,7,7,8,8,10};
+    auto res = searchRange(nums, 8);
+    cout << res[0] << " " << res[1] << endl; // 3 4
+}
+```
+
+--- Problem 6 ---
+TITLE: Search in Rotated Sorted Array
+DIFFICULTY: Medium
+PROBLEM: A sorted array was rotated at some pivot. Find target index or -1.
+INPUT: nums = [4,5,6,7,0,1,2], target = 0
+OUTPUT: 4
+REASONING:
+Step 1: lo=0, hi=6. mid=3, nums[3]=7.
+Step 2: Left half [4..7] is sorted. target=0 not in [4,7], so search right: lo=4.
+Step 3: mid=5, nums[5]=1. Left half [0,1] is sorted. target=0 in [0,1], so hi=5.
+Step 4: mid=4, nums[4]=0 == target. Return 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int search(vector<int>& nums, int target) {
+    int lo = 0, hi = nums.size()-1;
+    while (lo <= hi) {
+        int mid = lo + (hi-lo)/2;
+        if (nums[mid] == target) return mid;
+        if (nums[lo] <= nums[mid]) {
+            if (nums[lo] <= target && target < nums[mid]) hi = mid-1;
+            else lo = mid+1;
+        } else {
+            if (nums[mid] < target && target <= nums[hi]) lo = mid+1;
+            else hi = mid-1;
+        }
+    }
+    return -1;
+}
+int main() {
+    vector<int> nums = {4,5,6,7,0,1,2};
+    cout << search(nums, 0) << endl; // 4
+}
+```
+
+--- Problem 7 ---
+TITLE: Koko Eating Bananas (Binary Search on Answer)
+DIFFICULTY: Medium
+PROBLEM: Koko eats bananas. piles[i] bananas in pile i. She has h hours. Find min speed k such that she finishes in h hours.
+INPUT: piles = [3,6,7,11], h = 8
+OUTPUT: 4
+REASONING:
+Step 1: Speed range is [1, max(piles)] = [1,11].
+Step 2: Binary search on speed. For speed=6: ceil(3/6)+ceil(6/6)+ceil(7/6)+ceil(11/6)=1+1+2+2=6 <= 8. hi=6.
+Step 3: For speed=3: 1+2+3+4=10 > 8. lo=4.
+Step 4: For speed=4: 1+2+2+3=8 <= 8. hi=4.
+Step 5: lo==hi==4. Answer is 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canEat(vector<int>& piles, long long speed, int h) {
+    long long hours = 0;
+    for (int p : piles) hours += (p + speed - 1) / speed;
+    return hours <= h;
+}
+int minEatingSpeed(vector<int>& piles, int h) {
+    long long lo = 1, hi = *max_element(piles.begin(), piles.end());
+    while (lo < hi) {
+        long long mid = lo + (hi-lo)/2;
+        if (canEat(piles, mid, h)) hi = mid;
+        else lo = mid+1;
+    }
+    return lo;
+}
+int main() {
+    vector<int> piles = {3,6,7,11};
+    cout << minEatingSpeed(piles, 8) << endl; // 4
+}
+```
+
+--- Problem 8 ---
+TITLE: Find Peak Element
+DIFFICULTY: Medium
+PROBLEM: Find a peak element (greater than neighbors) in an array. Return any peak index.
+INPUT: nums = [1,2,3,1]
+OUTPUT: 2
+REASONING:
+Step 1: lo=0, hi=3. mid=1. nums[1]=2 < nums[2]=3, so peak is to the right. lo=2.
+Step 2: lo=2, hi=3. mid=2. nums[2]=3 > nums[3]=1, so peak is at or left. hi=2.
+Step 3: lo==hi==2. Return 2. nums[2]=3 is a peak.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int findPeakElement(vector<int>& nums) {
+    int lo = 0, hi = nums.size()-1;
+    while (lo < hi) {
+        int mid = lo + (hi-lo)/2;
+        if (nums[mid] < nums[mid+1]) lo = mid+1;
+        else hi = mid;
+    }
+    return lo;
+}
+int main() {
+    vector<int> nums = {1,2,3,1};
+    cout << findPeakElement(nums) << endl; // 2
+}
+```
+
+--- Problem 9 ---
+TITLE: Minimum Days to Make m Bouquets
+DIFFICULTY: Medium
+PROBLEM: Given bloomDay[i], make m bouquets each needing k adjacent bloomed flowers. Return min days or -1.
+INPUT: bloomDay=[1,10,3,10,2], m=3, k=1
+OUTPUT: 3
+REASONING:
+Step 1: We need m*k=3 flowers total, n=5 so feasible.
+Step 2: Binary search on days in [1, max(bloomDay)] = [1,10].
+Step 3: day=5: bloomed=[1,0,1,0,1] -> 3 bouquets of size 1 >= 3. hi=5.
+Step 4: day=3: bloomed=[1,0,1,0,1] -> 3 bouquets >= 3. hi=3.
+Step 5: day=2: bloomed=[1,0,0,0,1] -> 2 bouquets < 3. lo=3.
+Step 6: lo==hi==3. Answer = 3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canMake(vector<int>& bd, int m, int k, int day) {
+    int bouquets=0, flowers=0;
+    for (int d : bd) {
+        if (d <= day) { flowers++; if (flowers==k) { bouquets++; flowers=0; } }
+        else flowers=0;
+    }
+    return bouquets >= m;
+}
+int minDays(vector<int>& bd, int m, int k) {
+    if ((long long)m*k > bd.size()) return -1;
+    int lo=1, hi=*max_element(bd.begin(),bd.end());
+    while (lo<hi) {
+        int mid=lo+(hi-lo)/2;
+        if (canMake(bd,m,k,mid)) hi=mid;
+        else lo=mid+1;
+    }
+    return lo;
+}
+int main() {
+    vector<int> bd={1,10,3,10,2};
+    cout << minDays(bd,3,1) << endl; // 3
+}
+```
+
+--- Problem 10 ---
+TITLE: Capacity to Ship Packages Within D Days
+DIFFICULTY: Medium
+PROBLEM: Conveyor belt ships weights. Find min capacity to ship all in D days (in order).
+INPUT: weights=[1,2,3,4,5,6,7,8,9,10], days=5
+OUTPUT: 15
+REASONING:
+Step 1: lo=max(weights)=10, hi=sum=55.
+Step 2: Binary search on capacity. For cap=15: day-splits: [1,2,3,4,5],[6,7],[8],[9],[10] = 5 days. hi=15.
+Step 3: For cap=12: [1,2,3,4],[5,6],[7],[8],[9],[10] = 6 > 5. lo=13.
+Step 4: For cap=14: [1,2,3,4],[5,6],[7],[8],[9],[10] = 6? No: [1..4]=10,[5,6]=11,[7]=7+lo=13,[8]=8,[9]=9,[10]=10 = 6 days > 5. lo=15.
+Step 5: lo==hi==15.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canShip(vector<int>& w, int days, int cap) {
+    int d=1, cur=0;
+    for (int x : w) {
+        if (x > cap) return false;
+        if (cur+x > cap) { d++; cur=x; }
+        else cur+=x;
+    }
+    return d<=days;
+}
+int shipWithinDays(vector<int>& w, int days) {
+    int lo=*max_element(w.begin(),w.end());
+    int hi=accumulate(w.begin(),w.end(),0);
+    while(lo<hi){
+        int mid=lo+(hi-lo)/2;
+        if(canShip(w,days,mid)) hi=mid;
+        else lo=mid+1;
+    }
+    return lo;
+}
+int main(){
+    vector<int> w={1,2,3,4,5,6,7,8,9,10};
+    cout<<shipWithinDays(w,5)<<endl; // 15
+}
+```
+
+--- Problem 11 ---
+TITLE: Sqrt(x) via Binary Search
+DIFFICULTY: Easy
+PROBLEM: Compute integer square root of x (floor).
+INPUT: x = 8
+OUTPUT: 2
+REASONING:
+Step 1: lo=0, hi=8. mid=4. 4*4=16 > 8. hi=3.
+Step 2: mid=1. 1*1=1 <= 8. lo=2.
+Step 3: mid=2. 2*2=4 <= 8. lo=3.
+Step 4: mid=3. 3*3=9 > 8. hi=2.
+Step 5: lo>hi. Return hi=2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int mySqrt(int x) {
+    if (x==0) return 0;
+    long long lo=1, hi=x;
+    while(lo<=hi){
+        long long mid=lo+(hi-lo)/2;
+        if(mid*mid==x) return mid;
+        else if(mid*mid<x) lo=mid+1;
+        else hi=mid-1;
+    }
+    return hi;
+}
+int main(){cout<<mySqrt(8)<<endl;} // 2
+```
+
+--- Problem 12 ---
+TITLE: Count of Smaller Numbers After Self
+DIFFICULTY: Hard
+PROBLEM: For each element, count numbers to its right that are smaller than it.
+INPUT: nums = [5,2,6,1]
+OUTPUT: [2,1,1,0]
+REASONING:
+Step 1: Process from right to left, maintaining sorted list.
+Step 2: Insert 1: sorted=[1], count[3]=0.
+Step 3: Insert 6: lower_bound(6) in [1] = index 1. count[2]=1. sorted=[1,6].
+Step 4: Insert 2: lower_bound(2) in [1,6] = index 1. count[1]=1. sorted=[1,2,6].
+Step 5: Insert 5: lower_bound(5) in [1,2,6] = index 2. count[0]=2. sorted=[1,2,5,6].
+Step 6: Result = [2,1,1,0].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> countSmaller(vector<int>& nums) {
+    vector<int> sorted_list, result(nums.size());
+    for (int i=nums.size()-1; i>=0; i--) {
+        int pos = lower_bound(sorted_list.begin(), sorted_list.end(), nums[i]) - sorted_list.begin();
+        result[i] = pos;
+        sorted_list.insert(sorted_list.begin()+pos, nums[i]);
+    }
+    return result;
+}
+int main(){
+    vector<int> nums={5,2,6,1};
+    for(auto x:countSmaller(nums)) cout<<x<<" "; // 2 1 1 0
+}
+```
+
+--- Problem 13 ---
+TITLE: Find Minimum in Rotated Sorted Array
+DIFFICULTY: Medium
+PROBLEM: Find minimum element in rotated sorted array (no duplicates).
+INPUT: nums = [3,4,5,1,2]
+OUTPUT: 1
+REASONING:
+Step 1: lo=0, hi=4. mid=2, nums[2]=5. nums[mid] > nums[hi]=2, so min is in right half. lo=3.
+Step 2: lo=3, hi=4. mid=3, nums[3]=1. nums[mid] <= nums[hi]=2, min is in left half or at mid. hi=3.
+Step 3: lo==hi==3. Return nums[3]=1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int findMin(vector<int>& nums) {
+    int lo=0, hi=nums.size()-1;
+    while(lo<hi){
+        int mid=lo+(hi-lo)/2;
+        if(nums[mid]>nums[hi]) lo=mid+1;
+        else hi=mid;
+    }
+    return nums[lo];
+}
+int main(){
+    vector<int> nums={3,4,5,1,2};
+    cout<<findMin(nums)<<endl; // 1
+}
+```
+
+--- Problem 14 ---
+TITLE: Median of Two Sorted Arrays
+DIFFICULTY: Hard
+PROBLEM: Find median of two sorted arrays in O(log(min(m,n))).
+INPUT: nums1=[1,3], nums2=[2]
+OUTPUT: 2.0
+REASONING:
+Step 1: Ensure nums1 is shorter. Binary search partition of nums1.
+Step 2: Partition nums1 at i=1: left1=[1], right1=[3]. Partition nums2 at j=1: left2=[2], right2=[].
+Step 3: max(left1,left2)=max(1,2)=2, min(right1,right2)=min(3,INF)=3. 2<=3, valid.
+Step 4: Total length odd (3), median = max(left1, left2) = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+double findMedianSortedArrays(vector<int>& A, vector<int>& B) {
+    if (A.size() > B.size()) swap(A,B);
+    int m=A.size(), n=B.size();
+    int lo=0, hi=m;
+    while(lo<=hi){
+        int i=lo+(hi-lo)/2, j=(m+n+1)/2-i;
+        int Aleft=i?A[i-1]:INT_MIN, Aright=i<m?A[i]:INT_MAX;
+        int Bleft=j?B[j-1]:INT_MIN, Bright=j<n?B[j]:INT_MAX;
+        if(Aleft<=Bright && Bleft<=Aright){
+            if((m+n)%2==1) return max(Aleft,Bleft);
+            return (max(Aleft,Bleft)+min(Aright,Bright))/2.0;
+        } else if(Aleft>Bright) hi=i-1;
+        else lo=i+1;
+    }
+    return 0;
+}
+int main(){
+    vector<int> a={1,3},b={2};
+    cout<<findMedianSortedArrays(a,b)<<endl; // 2
+}
+```
+
+--- Problem 15 ---
+TITLE: Aggressive Cows (Binary Search on Answer)
+DIFFICULTY: Medium
+PROBLEM: Place C cows in N stalls. Maximize minimum distance between any two cows.
+INPUT: stalls=[1,2,4,8,9], C=3
+OUTPUT: 3
+REASONING:
+Step 1: Sort stalls: [1,2,4,8,9]. lo=1, hi=9-1=8.
+Step 2: Binary search on min distance d. Check if we can place 3 cows with >= d apart.
+Step 3: d=4: place at 1, next >= 5 -> 8, next >= 12 -> none. Only 2 cows. lo=5. Wait, re-check: 1,8 -> next >=12 none. 2 cows < 3. Hmm.
+Step 4: d=3: place at 1, next >=4 -> 4, next >=7 -> 8. 3 cows placed! hi=3.
+Step 5: d=2: place at 1, next >=3 -> 4, next >=6 -> 8. 3 cows. hi=2.
+Step 6: d=1: lo<hi so mid=1. hi keeps going down. Eventually lo==hi==3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canPlace(vector<int>& s, int c, int d) {
+    int placed=1, last=s[0];
+    for(int i=1;i<s.size();i++){
+        if(s[i]-last>=d){ placed++; last=s[i]; if(placed==c) return true; }
+    }
+    return placed>=c;
+}
+int aggressiveCows(vector<int>& s, int c) {
+    sort(s.begin(),s.end());
+    int lo=1, hi=s.back()-s[0];
+    while(lo<hi){
+        int mid=lo+(hi-lo+1)/2;
+        if(canPlace(s,c,mid)) lo=mid;
+        else hi=mid-1;
+    }
+    return lo;
+}
+int main(){
+    vector<int> s={1,2,4,8,9};
+    cout<<aggressiveCows(s,3)<<endl; // 3
+}
+```
+
+================================================================================
+CATEGORY 2: GRAPH — BFS (Problems 16–25)
+================================================================================
+
+--- Problem 16 ---
+TITLE: BFS Shortest Path in Unweighted Graph
+DIFFICULTY: Easy
+PROBLEM: Find shortest path length between source and destination in undirected unweighted graph.
+INPUT: n=6, edges=[[0,1],[0,2],[1,3],[2,3],[3,4],[4,5]], src=0, dst=5
+OUTPUT: 4
+REASONING:
+Step 1: BFS from 0. Level 0: {0}. Level 1: {1,2}. Level 2: {3}. Level 3: {4}. Level 4: {5}.
+Step 2: 5 is found at level 4. Distance = 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int bfsShortestPath(int n, vector<vector<int>>& edges, int src, int dst) {
+    vector<vector<int>> adj(n);
+    for(auto& e: edges){ adj[e[0]].push_back(e[1]); adj[e[1]].push_back(e[0]); }
+    vector<int> dist(n,-1);
+    queue<int> q;
+    q.push(src); dist[src]=0;
+    while(!q.empty()){
+        int u=q.front(); q.pop();
+        for(int v:adj[u]){
+            if(dist[v]==-1){ dist[v]=dist[u]+1; q.push(v); }
+        }
+    }
+    return dist[dst];
+}
+int main(){
+    vector<vector<int>> edges={{0,1},{0,2},{1,3},{2,3},{3,4},{4,5}};
+    cout<<bfsShortestPath(6,edges,0,5)<<endl; // 4
+}
+```
+
+--- Problem 17 ---
+TITLE: Number of Islands (BFS)
+DIFFICULTY: Medium
+PROBLEM: Count number of islands in a 2D grid of '1' (land) and '0' (water).
+INPUT: grid=[["1","1","0"],["0","1","0"],["0","0","1"]]
+OUTPUT: 2
+REASONING:
+Step 1: Scan grid. At (0,0)='1', start BFS. Mark (0,0),(0,1),(1,1) visited. Island 1.
+Step 2: Continue scan. (2,2)='1', start BFS. Mark (2,2). Island 2.
+Step 3: Total = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int numIslands(vector<vector<char>>& grid) {
+    int m=grid.size(), n=grid[0].size(), count=0;
+    int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++){
+        if(grid[i][j]=='1'){
+            count++;
+            queue<pair<int,int>> q;
+            q.push({i,j}); grid[i][j]='0';
+            while(!q.empty()){
+                auto [x,y]=q.front(); q.pop();
+                for(int d=0;d<4;d++){
+                    int nx=x+dx[d], ny=y+dy[d];
+                    if(nx>=0&&nx<m&&ny>=0&&ny<n&&grid[nx][ny]=='1'){
+                        grid[nx][ny]='0'; q.push({nx,ny});
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+int main(){
+    vector<vector<char>> g={{'1','1','0'},{'0','1','0'},{'0','0','1'}};
+    cout<<numIslands(g)<<endl; // 2
+}
+```
+
+--- Problem 18 ---
+TITLE: 0-1 BFS (Shortest Path with 0 or 1 Weights)
+DIFFICULTY: Medium
+PROBLEM: Grid where moving right/down costs 0 and moving left/up costs 1. Find min cost from (0,0) to (m-1,n-1).
+INPUT: grid=[[0,0,0],[1,1,0],[1,1,0]], m=3, n=3
+OUTPUT: 0
+REASONING:
+Step 1: Use deque-based 0-1 BFS. Push (0,0) with cost 0.
+Step 2: From (0,0), move right to (0,1) cost 0 (free), move down to (1,0) cost 1.
+Step 3: Continue expanding 0-cost edges first via front of deque.
+Step 4: Path (0,0)->(0,1)->(0,2)->(1,2)->(2,2) all cost 0 moves. Total = 0.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minCost(vector<vector<int>>& grid) {
+    int m=grid.size(), n=grid[0].size();
+    vector<vector<int>> dist(m,vector<int>(n,INT_MAX));
+    deque<pair<int,int>> dq;
+    dq.push_front({0,0}); dist[0][0]=0;
+    int dx[]={0,1,0,-1}, dy[]={1,0,-1,0};
+    int dirs[]={1,2,3,4}; // right=1,down=2,left=3,up=4
+    while(!dq.empty()){
+        auto [x,y]=dq.front(); dq.pop_front();
+        for(int d=0;d<4;d++){
+            int nx=x+dx[d], ny=y+dy[d];
+            if(nx<0||nx>=m||ny<0||ny>=n) continue;
+            int cost=(grid[x][y]==d+1)?0:1;
+            if(dist[x][y]+cost < dist[nx][ny]){
+                dist[nx][ny]=dist[x][y]+cost;
+                if(cost==0) dq.push_front({nx,ny});
+                else dq.push_back({nx,ny});
+            }
+        }
+    }
+    return dist[m-1][n-1];
+}
+int main(){
+    vector<vector<int>> g={{0,0,0},{1,1,0},{1,1,0}};
+    cout<<minCost(g)<<endl;
+}
+```
+
+--- Problem 19 ---
+TITLE: Word Ladder (BFS)
+DIFFICULTY: Hard
+PROBLEM: Transform beginWord to endWord by changing one letter at a time, each intermediate word must be in wordList. Find min steps.
+INPUT: beginWord="hit", endWord="cog", wordList=["hot","dot","dog","lot","log","cog"]
+OUTPUT: 5
+REASONING:
+Step 1: BFS from "hit". Level 1: change each char. "hit"->"hot" (in list). Level 1: {"hot"}.
+Step 2: From "hot": "dot","lot". Level 2: {"dot","lot"}.
+Step 3: From "dot": "dog". From "lot": "log". Level 3: {"dog","log"}.
+Step 4: From "dog": "cog". Found! Level 4: {"cog"}. Steps = 4+1=5.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int ladderLength(string begin, string end, vector<string>& wordList) {
+    unordered_set<string> ws(wordList.begin(), wordList.end());
+    if(!ws.count(end)) return 0;
+    queue<string> q;
+    q.push(begin); int steps=1;
+    while(!q.empty()){
+        int sz=q.size(); steps++;
+        for(int i=0;i<sz;i++){
+            string w=q.front(); q.pop();
+            for(int j=0;j<w.size();j++){
+                char orig=w[j];
+                for(char c='a';c<='z';c++){
+                    w[j]=c;
+                    if(w==end) return steps;
+                    if(ws.count(w)){ q.push(w); ws.erase(w); }
+                }
+                w[j]=orig;
+            }
+        }
+    }
+    return 0;
+}
+int main(){
+    vector<string> wl={"hot","dot","dog","lot","log","cog"};
+    cout<<ladderLength("hit","cog",wl)<<endl; // 5
+}
+```
+
+--- Problem 20 ---
+TITLE: Rotting Oranges (Multi-source BFS)
+DIFFICULTY: Medium
+PROBLEM: Grid has 0=empty, 1=fresh, 2=rotten. Each minute rotten spreads to adjacent fresh. Return minutes until no fresh, or -1.
+INPUT: grid=[[2,1,1],[1,1,0],[0,1,1]]
+OUTPUT: 4
+REASONING:
+Step 1: Multi-source BFS from all rotten oranges simultaneously.
+Step 2: Initial rotten: (0,0). Fresh=6.
+Step 3: Minute 1: (0,1),(1,0) rot. Minute 2: (0,2),(1,1) rot. Minute 3: (2,1) rot. Minute 4: (2,2) rot.
+Step 4: All 6 fresh oranges rotted. Answer = 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int orangesRotting(vector<vector<int>>& grid) {
+    int m=grid.size(), n=grid[0].size(), fresh=0, mins=0;
+    queue<pair<int,int>> q;
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++){
+        if(grid[i][j]==2) q.push({i,j});
+        if(grid[i][j]==1) fresh++;
+    }
+    int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+    while(!q.empty() && fresh>0){
+        int sz=q.size(); mins++;
+        for(int i=0;i<sz;i++){
+            auto [x,y]=q.front(); q.pop();
+            for(int d=0;d<4;d++){
+                int nx=x+dx[d], ny=y+dy[d];
+                if(nx>=0&&nx<m&&ny>=0&&ny<n&&grid[nx][ny]==1){
+                    grid[nx][ny]=2; fresh--; q.push({nx,ny});
+                }
+            }
+        }
+    }
+    return fresh==0?mins:-1;
+}
+int main(){
+    vector<vector<int>> g={{2,1,1},{1,1,0},{0,1,1}};
+    cout<<orangesRotting(g)<<endl; // 4
+}
+```
+
+--- Problem 21 ---
+TITLE: Bipartite Graph Check (BFS Coloring)
+DIFFICULTY: Medium
+PROBLEM: Check if a graph is bipartite (2-colorable).
+INPUT: graph=[[1,3],[0,2],[1,3],[0,2]]
+OUTPUT: true
+REASONING:
+Step 1: BFS color nodes alternately. Color node 0 = 0.
+Step 2: Neighbors of 0: 1,3 -> color 1.
+Step 3: Neighbors of 1: 0,2. 0 already color 0 (ok), color 2 = 0.
+Step 4: Neighbors of 3: 0,2. Both color 0, neighbors of 3 are color 1. No conflict.
+Step 5: Graph is bipartite.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool isBipartite(vector<vector<int>>& graph) {
+    int n=graph.size();
+    vector<int> color(n,-1);
+    for(int start=0;start<n;start++){
+        if(color[start]!=-1) continue;
+        queue<int> q; q.push(start); color[start]=0;
+        while(!q.empty()){
+            int u=q.front(); q.pop();
+            for(int v:graph[u]){
+                if(color[v]==-1){ color[v]=1-color[u]; q.push(v); }
+                else if(color[v]==color[u]) return false;
+            }
+        }
+    }
+    return true;
+}
+int main(){
+    vector<vector<int>> g={{1,3},{0,2},{1,3},{0,2}};
+    cout<<isBipartite(g)<<endl; // 1
+}
+```
+
+--- Problem 22 ---
+TITLE: Shortest Path in Binary Matrix (BFS)
+DIFFICULTY: Medium
+PROBLEM: Find shortest clear path (0s) from top-left to bottom-right in n×n binary matrix (8-directional).
+INPUT: grid=[[0,0,0],[1,1,0],[1,1,0]]
+OUTPUT: 4
+REASONING:
+Step 1: BFS from (0,0). dist[0][0]=1.
+Step 2: From (0,0): neighbors (0,1) dist=2, (1,1) skipped (it's 1... wait, grid[1][1]=1).
+Step 3: Actually grid=[[0,0,0],[1,1,0],[1,1,0]]. (0,0)=0, (0,1)=0, (0,2)=0, (1,2)=0, (2,2)=0.
+Step 4: Path: (0,0)->(0,1)->(0,2)->(1,2)->(2,2). Length=5? Wait 8-directional: (0,0)->(1,1)? grid[1][1]=1 blocked. (0,0)->(0,1)->(1,2)? grid[1][2]=0. -> (2,2). Length=4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
+    int n=grid.size();
+    if(grid[0][0]||grid[n-1][n-1]) return -1;
+    queue<tuple<int,int,int>> q;
+    q.push({0,0,1}); grid[0][0]=1;
+    int dx[]={-1,-1,-1,0,0,1,1,1};
+    int dy[]={-1,0,1,-1,1,-1,0,1};
+    while(!q.empty()){
+        auto [x,y,d]=q.front(); q.pop();
+        if(x==n-1&&y==n-1) return d;
+        for(int i=0;i<8;i++){
+            int nx=x+dx[i], ny=y+dy[i];
+            if(nx>=0&&nx<n&&ny>=0&&ny<n&&!grid[nx][ny]){
+                grid[nx][ny]=1; q.push({nx,ny,d+1});
+            }
+        }
+    }
+    return -1;
+}
+int main(){
+    vector<vector<int>> g={{0,0,0},{1,1,0},{1,1,0}};
+    cout<<shortestPathBinaryMatrix(g)<<endl; // 4
+}
+```
+
+--- Problem 23 ---
+TITLE: Minimum Knight Moves (BFS)
+DIFFICULTY: Medium
+PROBLEM: In infinite chessboard, find min moves for knight to reach (x,y) from (0,0).
+INPUT: x=2, y=1
+OUTPUT: 1
+REASONING:
+Step 1: Knight at (0,0), target (2,1). BFS with 8 possible knight moves.
+Step 2: From (0,0): can reach (2,1) directly in one move (+2,+1). Return 1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minKnightMoves(int x, int y) {
+    x=abs(x); y=abs(y);
+    map<pair<int,int>,int> dist;
+    queue<pair<int,int>> q;
+    q.push({0,0}); dist[{0,0}]=0;
+    int dx[]={1,1,-1,-1,2,2,-2,-2};
+    int dy[]={2,-2,2,-2,1,-1,1,-1};
+    while(!q.empty()){
+        auto [cx,cy]=q.front(); q.pop();
+        if(cx==x&&cy==y) return dist[{cx,cy}];
+        for(int i=0;i<8;i++){
+            int nx=cx+dx[i], ny=cy+dy[i];
+            if(nx>=-2&&nx<=x+2&&ny>=-2&&ny<=y+2&&!dist.count({nx,ny})){
+                dist[{nx,ny}]=dist[{cx,cy}]+1;
+                q.push({nx,ny});
+            }
+        }
+    }
+    return -1;
+}
+int main(){cout<<minKnightMoves(2,1)<<endl;} // 1
+```
+
+--- Problem 24 ---
+TITLE: Pacific Atlantic Water Flow (Multi-source BFS)
+DIFFICULTY: Medium
+PROBLEM: Find cells from which water can flow to both Pacific and Atlantic oceans.
+INPUT: heights=[[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]
+OUTPUT: [[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]]
+REASONING:
+Step 1: BFS from Pacific borders (top + left) going uphill. Mark reachable cells.
+Step 2: BFS from Atlantic borders (bottom + right) going uphill. Mark reachable cells.
+Step 3: Intersection of both sets = answer.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<vector<int>> pacificAtlantic(vector<vector<int>>& h) {
+    int m=h.size(), n=h[0].size();
+    vector<vector<bool>> pac(m,vector<bool>(n,false)), atl(m,vector<bool>(n,false));
+    int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+    auto bfs=[&](queue<pair<int,int>> q, vector<vector<bool>>& vis){
+        while(!q.empty()){
+            auto [x,y]=q.front(); q.pop();
+            for(int d=0;d<4;d++){
+                int nx=x+dx[d], ny=y+dy[d];
+                if(nx>=0&&nx<m&&ny>=0&&ny<n&&!vis[nx][ny]&&h[nx][ny]>=h[x][y]){
+                    vis[nx][ny]=true; q.push({nx,ny});
+                }
+            }
+        }
+    };
+    queue<pair<int,int>> pq, aq;
+    for(int i=0;i<m;i++){ pac[i][0]=true; pq.push({i,0}); atl[i][n-1]=true; aq.push({i,n-1}); }
+    for(int j=0;j<n;j++){ pac[0][j]=true; pq.push({0,j}); atl[m-1][j]=true; aq.push({m-1,j}); }
+    bfs(pq,pac); bfs(aq,atl);
+    vector<vector<int>> res;
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++) if(pac[i][j]&&atl[i][j]) res.push_back({i,j});
+    return res;
+}
+int main(){
+    vector<vector<int>> h={{1,2,2,3,5},{3,2,3,4,4},{2,4,5,3,1},{6,7,1,4,5},{5,1,1,2,4}};
+    for(auto& v:pacificAtlantic(h)) cout<<"["<<v[0]<<","<<v[1]<<"] ";
+}
+```
+
+--- Problem 25 ---
+TITLE: Snakes and Ladders (BFS)
+DIFFICULTY: Medium
+PROBLEM: Find minimum dice rolls to reach square n^2 on snakes-and-ladders board.
+INPUT: board=[[-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1],[-1,-1,-1,-1,-1,-1],[-1,35,-1,-1,13,-1],[-1,-1,-1,-1,-1,-1],[-1,15,-1,-1,-1,-1]]
+OUTPUT: 4
+REASONING:
+Step 1: BFS from square 1. At each step, roll 1-6 dice.
+Step 2: Track visited squares. Follow snakes/ladders immediately.
+Step 3: BFS level by level counts rolls. Return level when reaching n^2=36.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int snakesAndLadders(vector<vector<int>>& board) {
+    int n=board.size();
+    auto getPos=[&](int s)->pair<int,int>{
+        int r=(s-1)/n, c=(s-1)%n;
+        if(r%2==1) c=n-1-c;
+        return {n-1-r,c};
+    };
+    vector<bool> vis(n*n+1,false);
+    queue<pair<int,int>> q;
+    q.push({1,0}); vis[1]=true;
+    while(!q.empty()){
+        auto [sq,moves]=q.front(); q.pop();
+        for(int dice=1;dice<=6;dice++){
+            int next=sq+dice;
+            if(next>n*n) break;
+            auto [r,c]=getPos(next);
+            if(board[r][c]!=-1) next=board[r][c];
+            if(next==n*n) return moves+1;
+            if(!vis[next]){ vis[next]=true; q.push({next,moves+1}); }
+        }
+    }
+    return -1;
+}
+int main(){
+    vector<vector<int>> b={{-1,-1,-1,-1,-1,-1},{-1,-1,-1,-1,-1,-1},{-1,-1,-1,-1,-1,-1},{-1,35,-1,-1,13,-1},{-1,-1,-1,-1,-1,-1},{-1,15,-1,-1,-1,-1}};
+    cout<<snakesAndLadders(b)<<endl; // 4
+}
+```
+
+================================================================================
+CATEGORY 3: GRAPH — DFS (Problems 26–33)
+================================================================================
+
+--- Problem 26 ---
+TITLE: DFS Connected Components
+DIFFICULTY: Easy
+PROBLEM: Count connected components in an undirected graph.
+INPUT: n=5, edges=[[0,1],[1,2],[3,4]]
+OUTPUT: 2
+REASONING:
+Step 1: DFS from node 0 -> visits 0,1,2. Component 1.
+Step 2: Node 3 unvisited. DFS from 3 -> visits 3,4. Component 2.
+Step 3: Total = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+void dfs(int u, vector<vector<int>>& adj, vector<bool>& vis){
+    vis[u]=true;
+    for(int v:adj[u]) if(!vis[v]) dfs(v,adj,vis);
+}
+int countComponents(int n, vector<vector<int>>& edges){
+    vector<vector<int>> adj(n);
+    for(auto& e:edges){ adj[e[0]].push_back(e[1]); adj[e[1]].push_back(e[0]); }
+    vector<bool> vis(n,false);
+    int count=0;
+    for(int i=0;i<n;i++) if(!vis[i]){ dfs(i,adj,vis); count++; }
+    return count;
+}
+int main(){
+    vector<vector<int>> e={{0,1},{1,2},{3,4}};
+    cout<<countComponents(5,e)<<endl; // 2
+}
+```
+
+--- Problem 27 ---
+TITLE: Cycle Detection in Directed Graph (DFS)
+DIFFICULTY: Medium
+PROBLEM: Detect if a directed graph has a cycle.
+INPUT: n=4, edges=[[0,1],[1,2],[2,3],[3,1]]
+OUTPUT: true
+REASONING:
+Step 1: DFS with two color marks: gray (in stack), black (done).
+Step 2: DFS from 0: 0(gray)->1(gray)->2(gray)->3(gray)->1. 1 is gray (in stack). Cycle found!
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool dfs(int u, vector<vector<int>>& adj, vector<int>& color){
+    color[u]=1;
+    for(int v:adj[u]){
+        if(color[v]==1) return true;
+        if(color[v]==0 && dfs(v,adj,color)) return true;
+    }
+    color[u]=2; return false;
+}
+bool hasCycle(int n, vector<vector<int>>& edges){
+    vector<vector<int>> adj(n);
+    for(auto& e:edges) adj[e[0]].push_back(e[1]);
+    vector<int> color(n,0);
+    for(int i=0;i<n;i++) if(color[i]==0&&dfs(i,adj,color)) return true;
+    return false;
+}
+int main(){
+    vector<vector<int>> e={{0,1},{1,2},{2,3},{3,1}};
+    cout<<hasCycle(4,e)<<endl; // 1
+}
+```
+
+--- Problem 28 ---
+TITLE: All Paths from Source to Target (DFS)
+DIFFICULTY: Medium
+PROBLEM: Find all paths from node 0 to node n-1 in a DAG.
+INPUT: graph=[[1,2],[3],[3],[]]
+OUTPUT: [[0,1,3],[0,2,3]]
+REASONING:
+Step 1: DFS from 0 with path tracking.
+Step 2: 0->1->3: reached target. Add [0,1,3].
+Step 3: 0->2->3: reached target. Add [0,2,3].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+void dfs(int u, int target, vector<vector<int>>& graph, vector<int>& path, vector<vector<int>>& res){
+    path.push_back(u);
+    if(u==target){ res.push_back(path); }
+    else for(int v:graph[u]) dfs(v,target,graph,path,res);
+    path.pop_back();
+}
+vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph){
+    vector<vector<int>> res; vector<int> path;
+    dfs(0,graph.size()-1,graph,path,res);
+    return res;
+}
+int main(){
+    vector<vector<int>> g={{1,2},{3},{3},{}};
+    for(auto& p:allPathsSourceTarget(g)){ for(int x:p) cout<<x<<" "; cout<<"\n"; }
+}
+```
+
+--- Problem 29 ---
+TITLE: Number of Provinces (DFS / Union Find)
+DIFFICULTY: Medium
+PROBLEM: n cities, isConnected[i][j]=1 if directly connected. Find number of provinces.
+INPUT: isConnected=[[1,1,0],[1,1,0],[0,0,1]]
+OUTPUT: 2
+REASONING:
+Step 1: DFS from city 0: visits 0,1. Province 1.
+Step 2: City 2 unvisited: visits 2. Province 2.
+Step 3: Total = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+void dfs(int u, vector<vector<int>>& g, vector<bool>& vis){
+    vis[u]=true;
+    for(int v=0;v<g.size();v++) if(g[u][v]&&!vis[v]) dfs(v,g,vis);
+}
+int findCircleNum(vector<vector<int>>& g){
+    int n=g.size(), count=0;
+    vector<bool> vis(n,false);
+    for(int i=0;i<n;i++) if(!vis[i]){ dfs(i,g,vis); count++; }
+    return count;
+}
+int main(){
+    vector<vector<int>> g={{1,1,0},{1,1,0},{0,0,1}};
+    cout<<findCircleNum(g)<<endl; // 2
+}
+```
+
+--- Problem 30 ---
+TITLE: Longest Path in a DAG (DFS + Memoization)
+DIFFICULTY: Medium
+PROBLEM: Find the length of the longest path in a DAG.
+INPUT: n=6, edges=[[0,1],[0,2],[1,3],[1,4],[2,4],[3,5],[4,5]]
+OUTPUT: 4
+REASONING:
+Step 1: Use DFS with memoization. dp[u] = longest path starting at u.
+Step 2: dp[5]=0, dp[3]=1 (3->5), dp[4]=1 (4->5), dp[1]=2 (1->3->5 or 1->4->5), dp[2]=2 (2->4->5), dp[0]=3 (0->1->3->5).
+Step 3: Max dp[i] = 3 edges = path length 4 (nodes).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int dfs(int u, vector<vector<int>>& adj, vector<int>& memo){
+    if(memo[u]!=-1) return memo[u];
+    memo[u]=0;
+    for(int v:adj[u]) memo[u]=max(memo[u],1+dfs(v,adj,memo));
+    return memo[u];
+}
+int longestPath(int n, vector<vector<int>>& edges){
+    vector<vector<int>> adj(n);
+    for(auto& e:edges) adj[e[0]].push_back(e[1]);
+    vector<int> memo(n,-1);
+    int ans=0;
+    for(int i=0;i<n;i++) ans=max(ans,dfs(i,adj,memo));
+    return ans;
+}
+int main(){
+    vector<vector<int>> e={{0,1},{0,2},{1,3},{1,4},{2,4},{3,5},{4,5}};
+    cout<<longestPath(6,e)<<endl; // 3
+}
+```
+
+--- Problem 31 ---
+TITLE: Course Schedule (Cycle Detection via DFS)
+DIFFICULTY: Medium
+PROBLEM: n courses, prerequisites[i]=[a,b] means must take b before a. Can you finish all courses?
+INPUT: n=2, prerequisites=[[1,0]]
+OUTPUT: true
+REASONING:
+Step 1: Build directed graph. 0->1.
+Step 2: DFS cycle detection. No cycle found.
+Step 3: Can finish all courses. Return true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool dfs(int u, vector<vector<int>>& adj, vector<int>& state){
+    state[u]=1;
+    for(int v:adj[u]){
+        if(state[v]==1) return false;
+        if(state[v]==0&&!dfs(v,adj,state)) return false;
+    }
+    state[u]=2; return true;
+}
+bool canFinish(int n, vector<vector<int>>& prereqs){
+    vector<vector<int>> adj(n);
+    for(auto& p:prereqs) adj[p[1]].push_back(p[0]);
+    vector<int> state(n,0);
+    for(int i=0;i<n;i++) if(state[i]==0&&!dfs(i,adj,state)) return false;
+    return true;
+}
+int main(){
+    vector<vector<int>> p={{1,0}};
+    cout<<canFinish(2,p)<<endl; // 1
+}
+```
+
+--- Problem 32 ---
+TITLE: Surrounded Regions (DFS)
+DIFFICULTY: Medium
+PROBLEM: Flip all 'O's surrounded by 'X's (not connected to border) to 'X'.
+INPUT: board=[["X","X","X","X"],["X","O","O","X"],["X","X","O","X"],["X","O","X","X"]]
+OUTPUT: [["X","X","X","X"],["X","X","X","X"],["X","X","X","X"],["X","O","X","X"]]
+REASONING:
+Step 1: DFS from all border 'O's, mark them as safe ('S').
+Step 2: Border 'O' at (3,1). Mark (3,1) as 'S'. No connected interior O's.
+Step 3: Interior O's at (1,1),(1,2),(2,2) are not safe -> flip to 'X'.
+Step 4: Restore 'S' back to 'O'. Result as expected.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+void dfs(vector<vector<char>>& b, int x, int y){
+    int m=b.size(), n=b[0].size();
+    if(x<0||x>=m||y<0||y>=n||b[x][y]!='O') return;
+    b[x][y]='S';
+    dfs(b,x+1,y); dfs(b,x-1,y); dfs(b,x,y+1); dfs(b,x,y-1);
+}
+void solve(vector<vector<char>>& b){
+    int m=b.size(), n=b[0].size();
+    for(int i=0;i<m;i++){ dfs(b,i,0); dfs(b,i,n-1); }
+    for(int j=0;j<n;j++){ dfs(b,0,j); dfs(b,m-1,j); }
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++){
+        if(b[i][j]=='O') b[i][j]='X';
+        else if(b[i][j]=='S') b[i][j]='O';
+    }
+}
+int main(){
+    vector<vector<char>> b={{'X','X','X','X'},{'X','O','O','X'},{'X','X','O','X'},{'X','O','X','X'}};
+    solve(b);
+    for(auto& row:b){ for(char c:row) cout<<c; cout<<"\n"; }
+}
+```
+
+--- Problem 33 ---
+TITLE: Clone Graph (DFS)
+DIFFICULTY: Medium
+PROBLEM: Clone an undirected graph.
+INPUT: adjList=[[2,4],[1,3],[2,4],[1,3]]
+OUTPUT: Deep copy of the graph
+REASONING:
+Step 1: Use DFS with hash map to avoid revisiting.
+Step 2: For each node, create a clone. Recursively clone neighbors.
+Step 3: Map original -> clone. Return clone of start node.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct Node { int val; vector<Node*> neighbors; Node(int v):val(v){} };
+unordered_map<Node*,Node*> visited;
+Node* cloneGraph(Node* node){
+    if(!node) return nullptr;
+    if(visited.count(node)) return visited[node];
+    Node* clone=new Node(node->val);
+    visited[node]=clone;
+    for(Node* nb:node->neighbors) clone->neighbors.push_back(cloneGraph(nb));
+    return clone;
+}
+```
+
+================================================================================
+CATEGORY 4: DIJKSTRA (Problems 34–40)
+================================================================================
+
+--- Problem 34 ---
+TITLE: Classic Dijkstra
+DIFFICULTY: Medium
+PROBLEM: Find shortest path from source to all vertices in weighted graph.
+INPUT: n=5, edges=[[0,1,4],[0,2,1],[2,1,2],[1,3,1],[2,3,5],[3,4,3]], src=0
+OUTPUT: dist=[0,3,1,4,7]
+REASONING:
+Step 1: dist=[0,INF,INF,INF,INF]. PQ={(0,0)}.
+Step 2: Pop (0,0). Relax: dist[1]=4, dist[2]=1. PQ={(1,2),(4,1)}.
+Step 3: Pop (1,2). Relax: dist[1]=min(4,1+2)=3, dist[3]=min(INF,1+5)=6. PQ={(3,1),(6,3)}.
+Step 4: Pop (3,1). Relax: dist[3]=min(6,3+1)=4. PQ={(4,3),(6,3)}.
+Step 5: Pop (4,3). Relax: dist[4]=min(INF,4+3)=7.
+Step 6: Final dist=[0,3,1,4,7].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> dijkstra(int n, vector<vector<int>>& edges, int src){
+    vector<vector<pair<int,int>>> adj(n);
+    for(auto& e:edges){ adj[e[0]].push_back({e[1],e[2]}); adj[e[1]].push_back({e[0],e[2]}); }
+    vector<int> dist(n,INT_MAX);
+    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<>> pq;
+    dist[src]=0; pq.push({0,src});
+    while(!pq.empty()){
+        auto [d,u]=pq.top(); pq.pop();
+        if(d>dist[u]) continue;
+        for(auto [v,w]:adj[u]){
+            if(dist[u]+w<dist[v]){ dist[v]=dist[u]+w; pq.push({dist[v],v}); }
+        }
+    }
+    return dist;
+}
+int main(){
+    vector<vector<int>> e={{0,1,4},{0,2,1},{2,1,2},{1,3,1},{2,3,5},{3,4,3}};
+    for(int x:dijkstra(5,e,0)) cout<<x<<" "; // 0 3 1 4 7
+}
+```
+
+--- Problem 35 ---
+TITLE: Network Delay Time
+DIFFICULTY: Medium
+PROBLEM: n nodes, times[i]=[u,v,w] directed edge. Signal from k. How long until all nodes receive?
+INPUT: times=[[2,1,1],[2,3,1],[3,4,1]], n=4, k=2
+OUTPUT: 2
+REASONING:
+Step 1: Dijkstra from k=2.
+Step 2: dist[2]=0. dist[1]=1, dist[3]=1 (from 2). dist[4]=2 (from 3).
+Step 3: All nodes reachable. Max dist = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int networkDelayTime(vector<vector<int>>& times, int n, int k){
+    vector<vector<pair<int,int>>> adj(n+1);
+    for(auto& t:times) adj[t[0]].push_back({t[1],t[2]});
+    vector<int> dist(n+1,INT_MAX);
+    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<>> pq;
+    dist[k]=0; pq.push({0,k});
+    while(!pq.empty()){
+        auto [d,u]=pq.top(); pq.pop();
+        if(d>dist[u]) continue;
+        for(auto [v,w]:adj[u]) if(dist[u]+w<dist[v]){ dist[v]=dist[u]+w; pq.push({dist[v],v}); }
+    }
+    int ans=0;
+    for(int i=1;i<=n;i++){ if(dist[i]==INT_MAX) return -1; ans=max(ans,dist[i]); }
+    return ans;
+}
+int main(){
+    vector<vector<int>> t={{2,1,1},{2,3,1},{3,4,1}};
+    cout<<networkDelayTime(t,4,2)<<endl; // 2
+}
+```
+
+--- Problem 36 ---
+TITLE: Cheapest Flights Within K Stops (Modified Dijkstra/Bellman-Ford)
+DIFFICULTY: Medium
+PROBLEM: n cities, flights[i]=[from,to,price]. Find cheapest from src to dst with at most k stops.
+INPUT: n=3, flights=[[0,1,100],[1,2,100],[0,2,500]], src=0, dst=2, k=1
+OUTPUT: 200
+REASONING:
+Step 1: BFS/DP with at most k+1 edges.
+Step 2: After 0 edges: dist[0]=0.
+Step 3: After 1 edge: dist[1]=100, dist[2]=500.
+Step 4: After 2 edges (k+1=2): dist[2]=min(500,100+100)=200.
+Step 5: Answer = 200.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k){
+    vector<int> dist(n,INT_MAX);
+    dist[src]=0;
+    for(int i=0;i<=k;i++){
+        vector<int> tmp=dist;
+        for(auto& f:flights){
+            if(dist[f[0]]!=INT_MAX && dist[f[0]]+f[2]<tmp[f[1]])
+                tmp[f[1]]=dist[f[0]]+f[2];
+        }
+        dist=tmp;
+    }
+    return dist[dst]==INT_MAX?-1:dist[dst];
+}
+int main(){
+    vector<vector<int>> f={{0,1,100},{1,2,100},{0,2,500}};
+    cout<<findCheapestPrice(3,f,0,2,1)<<endl; // 200
+}
+```
+
+--- Problem 37 ---
+TITLE: Path with Minimum Effort (Dijkstra on Grid)
+DIFFICULTY: Medium
+PROBLEM: Find path from (0,0) to (m-1,n-1) minimizing max absolute difference between consecutive cells.
+INPUT: heights=[[1,2,2],[3,8,2],[5,3,5]]
+OUTPUT: 2
+REASONING:
+Step 1: Dijkstra where "distance" = max effort on path so far.
+Step 2: From (0,0)=1: neighbors (0,1) effort=|1-2|=1, (1,0) effort=|1-3|=2.
+Step 3: Best path: (0,0)->(0,1)->(0,2)->(1,2)->(2,2). Efforts: 1,0,0,3. Max=3.
+Step 4: Better: (0,0)->(1,0)->(2,0)->(2,1)->(2,2). Efforts: 2,2,2,2. Max=2.
+Step 5: Answer = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minimumEffortPath(vector<vector<int>>& h){
+    int m=h.size(), n=h[0].size();
+    vector<vector<int>> dist(m,vector<int>(n,INT_MAX));
+    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<>> pq;
+    dist[0][0]=0; pq.push({0,0,0});
+    int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+    while(!pq.empty()){
+        auto [d,x,y]=pq.top(); pq.pop();
+        if(x==m-1&&y==n-1) return d;
+        if(d>dist[x][y]) continue;
+        for(int i=0;i<4;i++){
+            int nx=x+dx[i], ny=y+dy[i];
+            if(nx>=0&&nx<m&&ny>=0&&ny<n){
+                int nd=max(d,abs(h[x][y]-h[nx][ny]));
+                if(nd<dist[nx][ny]){ dist[nx][ny]=nd; pq.push({nd,nx,ny}); }
+            }
+        }
+    }
+    return 0;
+}
+int main(){
+    vector<vector<int>> h={{1,2,2},{3,8,2},{5,3,5}};
+    cout<<minimumEffortPath(h)<<endl; // 2
+}
+```
+
+--- Problem 38 ---
+TITLE: Swim in Rising Water (Dijkstra)
+DIFFICULTY: Hard
+PROBLEM: Grid where grid[i][j] is elevation. Water rises. Find min time to swim from (0,0) to (n-1,n-1).
+INPUT: grid=[[0,2],[1,3]]
+OUTPUT: 3
+REASONING:
+Step 1: We need min T such that there's a path where all cells have elevation <= T.
+Step 2: Use Dijkstra: cost of reaching cell = max(cost so far, grid[cell]).
+Step 3: From (0,0)=0: (0,1)=max(0,2)=2, (1,0)=max(0,1)=1.
+Step 4: Pop (1,1,0). From (1,0)=1: (1,1)=max(1,3)=3.
+Step 5: Pop (2,0,1). From (0,1)=2: (1,1)=min(3,max(2,3))=3.
+Step 6: Pop (3,1,1). Target reached. Answer=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int swimInWater(vector<vector<int>>& grid){
+    int n=grid.size();
+    vector<vector<int>> dist(n,vector<int>(n,INT_MAX));
+    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<>> pq;
+    dist[0][0]=grid[0][0]; pq.push({grid[0][0],0,0});
+    int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+    while(!pq.empty()){
+        auto [d,x,y]=pq.top(); pq.pop();
+        if(x==n-1&&y==n-1) return d;
+        if(d>dist[x][y]) continue;
+        for(int i=0;i<4;i++){
+            int nx=x+dx[i], ny=y+dy[i];
+            if(nx>=0&&nx<n&&ny>=0&&ny<n){
+                int nd=max(d,grid[nx][ny]);
+                if(nd<dist[nx][ny]){ dist[nx][ny]=nd; pq.push({nd,nx,ny}); }
+            }
+        }
+    }
+    return -1;
+}
+int main(){
+    vector<vector<int>> g={{0,2},{1,3}};
+    cout<<swimInWater(g)<<endl; // 3
+}
+```
+
+--- Problem 39 ---
+TITLE: Bellman-Ford Algorithm
+DIFFICULTY: Medium
+PROBLEM: Find shortest paths from source, detect negative cycles.
+INPUT: n=5, edges=[[0,1,-1],[0,2,4],[1,2,3],[1,3,2],[1,4,2],[3,2,5],[3,1,1],[4,3,-3]], src=0
+OUTPUT: dist=[0,-1,2,-2,1]
+REASONING:
+Step 1: Relax all edges n-1=4 times.
+Step 2: After iter 1: dist[1]=-1(0->1), dist[2]=min(4,-1+3)=2, dist[3]=-1+2=1, dist[4]=-1+2=1.
+Step 3: After iter 2: dist[3]=min(1,dist[4]-3)=min(1,1-3)=-2. dist[2]=min(2,-2+5)=2.
+Step 4: After iter 3: dist[1]=min(-1,dist[3]+1)=min(-1,-1)=-1. Stable.
+Step 5: dist=[0,-1,2,-2,1].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> bellmanFord(int n, vector<vector<int>>& edges, int src){
+    vector<int> dist(n,INT_MAX);
+    dist[src]=0;
+    for(int i=0;i<n-1;i++)
+        for(auto& e:edges)
+            if(dist[e[0]]!=INT_MAX && dist[e[0]]+e[2]<dist[e[1]])
+                dist[e[1]]=dist[e[0]]+e[2];
+    return dist;
+}
+int main(){
+    vector<vector<int>> e={{0,1,-1},{0,2,4},{1,2,3},{1,3,2},{1,4,2},{3,2,5},{3,1,1},{4,3,-3}};
+    for(int x:bellmanFord(5,e,0)) cout<<x<<" "; // 0 -1 2 -2 1
+}
+```
+
+--- Problem 40 ---
+TITLE: Floyd-Warshall All-Pairs Shortest Path
+DIFFICULTY: Medium
+PROBLEM: Find shortest path between all pairs of vertices.
+INPUT: n=4, dist matrix with edges 0->1=3, 0->3=7, 1->0=8, 1->2=2, 2->0=5, 2->3=1, 3->0=2
+OUTPUT: All-pairs shortest path matrix
+REASONING:
+Step 1: Initialize dist matrix with direct edges and INF for non-edges, 0 diagonal.
+Step 2: For each intermediate vertex k from 0 to n-1, update dist[i][j]=min(dist[i][j], dist[i][k]+dist[k][j]).
+Step 3: After all iterations, dist[i][j] = shortest path from i to j.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+void floydWarshall(vector<vector<int>>& dist, int n){
+    for(int k=0;k<n;k++)
+        for(int i=0;i<n;i++)
+            for(int j=0;j<n;j++)
+                if(dist[i][k]!=INT_MAX/2 && dist[k][j]!=INT_MAX/2)
+                    dist[i][j]=min(dist[i][j],dist[i][k]+dist[k][j]);
+}
+int main(){
+    int INF=INT_MAX/2;
+    vector<vector<int>> d={{0,3,INF,7},{8,0,2,INF},{5,INF,0,1},{2,INF,INF,0}};
+    floydWarshall(d,4);
+    for(auto& row:d){ for(int x:row) cout<<(x==INF?-1:x)<<" "; cout<<"\n"; }
+}
+```
+
+================================================================================
+CATEGORY 5: TOPOLOGICAL SORT (Problems 41–46)
+================================================================================
+
+--- Problem 41 ---
+TITLE: Topological Sort (Kahn's BFS)
+DIFFICULTY: Medium
+PROBLEM: Return topological ordering of a DAG.
+INPUT: n=6, edges=[[5,2],[5,0],[4,0],[4,1],[2,3],[3,1]]
+OUTPUT: [4,5,0,2,3,1] (one valid ordering)
+REASONING:
+Step 1: Compute in-degree. in=[2,2,1,1,0,0].
+Step 2: Queue nodes with in-degree 0: {4,5}.
+Step 3: Process 4: reduce in-degree of 0,1. in=[1,1,...]. Process 5: reduce 2,0. in=[0,1,0,...].
+Step 4: Queue {0,2}. Continue until all processed.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> topoSort(int n, vector<vector<int>>& edges){
+    vector<vector<int>> adj(n);
+    vector<int> indeg(n,0);
+    for(auto& e:edges){ adj[e[0]].push_back(e[1]); indeg[e[1]]++; }
+    queue<int> q;
+    for(int i=0;i<n;i++) if(indeg[i]==0) q.push(i);
+    vector<int> order;
+    while(!q.empty()){
+        int u=q.front(); q.pop(); order.push_back(u);
+        for(int v:adj[u]) if(--indeg[v]==0) q.push(v);
+    }
+    return order.size()==n?order:vector<int>{};
+}
+int main(){
+    vector<vector<int>> e={{5,2},{5,0},{4,0},{4,1},{2,3},{3,1}};
+    for(int x:topoSort(6,e)) cout<<x<<" ";
+}
+```
+
+--- Problem 42 ---
+TITLE: Course Schedule II (Topological Sort)
+DIFFICULTY: Medium
+PROBLEM: Return order to take all courses given prerequisites, or [] if impossible.
+INPUT: n=4, prerequisites=[[1,0],[2,0],[3,1],[3,2]]
+OUTPUT: [0,1,2,3] or [0,2,1,3]
+REASONING:
+Step 1: Build graph. In-degrees: 0=0, 1=1, 2=1, 3=2.
+Step 2: Start with 0 (indeg 0). Process 0 -> decrement indeg of 1,2. Queue: {1,2}.
+Step 3: Process 1,2 -> decrement indeg of 3 twice -> 0. Queue: {3}.
+Step 4: Process 3. Order=[0,1,2,3]. Valid.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> findOrder(int n, vector<vector<int>>& prereqs){
+    vector<vector<int>> adj(n);
+    vector<int> indeg(n,0);
+    for(auto& p:prereqs){ adj[p[1]].push_back(p[0]); indeg[p[0]]++; }
+    queue<int> q;
+    for(int i=0;i<n;i++) if(!indeg[i]) q.push(i);
+    vector<int> order;
+    while(!q.empty()){
+        int u=q.front(); q.pop(); order.push_back(u);
+        for(int v:adj[u]) if(--indeg[v]==0) q.push(v);
+    }
+    return order.size()==n?order:vector<int>{};
+}
+int main(){
+    vector<vector<int>> p={{1,0},{2,0},{3,1},{3,2}};
+    for(int x:findOrder(4,p)) cout<<x<<" "; // 0 1 2 3
+}
+```
+
+--- Problem 43 ---
+TITLE: Alien Dictionary (Topological Sort)
+DIFFICULTY: Hard
+PROBLEM: Given sorted alien words, derive the character ordering.
+INPUT: words=["wrt","wrf","er","ett","rftt"]
+OUTPUT: "wertf"
+REASONING:
+Step 1: Compare adjacent words to find character ordering constraints.
+Step 2: wrt vs wrf: t < f. wrf vs er: w < e. er vs ett: r < t. ett vs rftt: e < r.
+Step 3: Edges: t->f, w->e, r->t, e->r. Topo sort: w->e->r->t->f.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+string alienOrder(vector<string>& words){
+    map<char,set<char>> adj;
+    map<char,int> indeg;
+    for(auto& w:words) for(char c:w) if(!indeg.count(c)) indeg[c]=0;
+    for(int i=0;i<words.size()-1;i++){
+        string& a=words[i], &b=words[i+1];
+        int len=min(a.size(),b.size()); bool found=false;
+        for(int j=0;j<len;j++) if(a[j]!=b[j]){
+            if(!adj[a[j]].count(b[j])){ adj[a[j]].insert(b[j]); indeg[b[j]]++; }
+            found=true; break;
+        }
+        if(!found && a.size()>b.size()) return "";
+    }
+    queue<char> q;
+    for(auto& [c,d]:indeg) if(d==0) q.push(c);
+    string res;
+    while(!q.empty()){
+        char c=q.front(); q.pop(); res+=c;
+        for(char nb:adj[c]) if(--indeg[nb]==0) q.push(nb);
+    }
+    return res.size()==indeg.size()?res:"";
+}
+int main(){
+    vector<string> w={"wrt","wrf","er","ett","rftt"};
+    cout<<alienOrder(w)<<endl; // wertf
+}
+```
+
+--- Problem 44 ---
+TITLE: Minimum Time to Complete All Tasks (Topological Sort)
+DIFFICULTY: Medium
+PROBLEM: Tasks with durations and dependencies. Find minimum time to complete all.
+INPUT: n=3, relations=[[1,3],[2,3]], time=[3,2,5]
+OUTPUT: 8
+REASONING:
+Step 1: Topo sort. Nodes 1,2 have no dependencies.
+Step 2: dp[1]=3 (time[0]), dp[2]=2 (time[1]).
+Step 3: Node 3 depends on 1,2. dp[3]=max(dp[1],dp[2])+time[2]=3+5=8.
+Step 4: Answer = max dp = 8.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minimumTime(int n, vector<vector<int>>& relations, vector<int>& time){
+    vector<vector<int>> adj(n+1);
+    vector<int> indeg(n+1,0);
+    for(auto& r:relations){ adj[r[0]].push_back(r[1]); indeg[r[1]]++; }
+    vector<int> dp(n+1,0);
+    queue<int> q;
+    for(int i=1;i<=n;i++) if(!indeg[i]){ q.push(i); dp[i]=time[i-1]; }
+    while(!q.empty()){
+        int u=q.front(); q.pop();
+        for(int v:adj[u]){
+            dp[v]=max(dp[v],dp[u]+time[v-1]);
+            if(--indeg[v]==0) q.push(v);
+        }
+    }
+    return *max_element(dp.begin(),dp.end());
+}
+int main(){
+    vector<vector<int>> r={{1,3},{2,3}};
+    vector<int> t={3,2,5};
+    cout<<minimumTime(3,r,t)<<endl; // 8
+}
+```
+
+--- Problem 45 ---
+TITLE: Reconstruct Itinerary (Topological / Hierholzer's)
+DIFFICULTY: Hard
+PROBLEM: Given airline tickets [from,to], reconstruct itinerary starting from JFK, lexicographical order.
+INPUT: tickets=[["MUC","LHR"],["JFK","MUC"],["SFO","SJC"],["LHR","SFO"]]
+OUTPUT: ["JFK","MUC","LHR","SFO","SJC"]
+REASONING:
+Step 1: Build adjacency list with sorted destinations (min-heap / multiset).
+Step 2: Hierholzer's DFS: visit smallest neighbor first.
+Step 3: JFK->MUC->LHR->SFO->SJC. Post-order gives reverse itinerary.
+Step 4: Reverse to get final path.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+map<string,multiset<string>> adj;
+vector<string> result;
+void dfs(const string& u){
+    while(!adj[u].empty()){
+        string v=*adj[u].begin(); adj[u].erase(adj[u].begin()); dfs(v);
+    }
+    result.push_back(u);
+}
+vector<string> findItinerary(vector<vector<string>>& tickets){
+    for(auto& t:tickets) adj[t[0]].insert(t[1]);
+    dfs("JFK");
+    reverse(result.begin(),result.end());
+    return result;
+}
+int main(){
+    vector<vector<string>> t={{"MUC","LHR"},{"JFK","MUC"},{"SFO","SJC"},{"LHR","SFO"}};
+    for(auto& s:findItinerary(t)) cout<<s<<" "; // JFK MUC LHR SFO SJC
+}
+```
+
+--- Problem 46 ---
+TITLE: Parallel Courses (Topological Sort + BFS)
+DIFFICULTY: Medium
+PROBLEM: n courses. relations[i]=[a,b] means a must be done before b. Find min semesters to finish all.
+INPUT: n=3, relations=[[1,3],[2,3]]
+OUTPUT: 2
+REASONING:
+Step 1: Build graph. Courses 1,2 have no prerequisites -> take in semester 1.
+Step 2: After semester 1, course 3's prereqs are satisfied -> take in semester 2.
+Step 3: Minimum semesters = 2 (= longest chain = BFS levels).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minimumSemesters(int n, vector<vector<int>>& relations){
+    vector<vector<int>> adj(n+1);
+    vector<int> indeg(n+1,0);
+    for(auto& r:relations){ adj[r[0]].push_back(r[1]); indeg[r[1]]++; }
+    queue<int> q;
+    for(int i=1;i<=n;i++) if(!indeg[i]) q.push(i);
+    int semesters=0, taken=0;
+    while(!q.empty()){
+        int sz=q.size(); semesters++; taken+=sz;
+        for(int i=0;i<sz;i++){
+            int u=q.front(); q.pop();
+            for(int v:adj[u]) if(--indeg[v]==0) q.push(v);
+        }
+    }
+    return taken==n?semesters:-1;
+}
+int main(){
+    vector<vector<int>> r={{1,3},{2,3}};
+    cout<<minimumSemesters(3,r)<<endl; // 2
+}
+```
+
+================================================================================
+CATEGORY 6: UNION FIND (Problems 47–53)
+================================================================================
+
+--- Problem 47 ---
+TITLE: Basic Union-Find (DSU)
+DIFFICULTY: Easy
+PROBLEM: Implement union-find with path compression and union by rank.
+INPUT: n=5, unions=[(0,1),(1,2),(3,4)], query=(0,2)
+OUTPUT: true (0 and 2 are connected)
+REASONING:
+Step 1: Union 0 and 1. Union 1 and 2 (now 0,1,2 in same set). Union 3 and 4.
+Step 2: Find(0) and Find(2) both return same root. Connected = true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> parent, rank;
+    DSU(int n): parent(n), rank(n,0){ iota(parent.begin(),parent.end(),0); }
+    int find(int x){ return parent[x]==x?x:parent[x]=find(parent[x]); }
+    bool unite(int x, int y){
+        x=find(x); y=find(y); if(x==y) return false;
+        if(rank[x]<rank[y]) swap(x,y);
+        parent[y]=x; if(rank[x]==rank[y]) rank[x]++;
+        return true;
+    }
+    bool connected(int x, int y){ return find(x)==find(y); }
+};
+int main(){
+    DSU dsu(5);
+    dsu.unite(0,1); dsu.unite(1,2); dsu.unite(3,4);
+    cout<<dsu.connected(0,2)<<endl; // 1
+    cout<<dsu.connected(0,3)<<endl; // 0
+}
+```
+
+--- Problem 48 ---
+TITLE: Number of Connected Components (Union Find)
+DIFFICULTY: Easy
+PROBLEM: Find number of connected components using Union-Find.
+INPUT: n=5, edges=[[0,1],[1,2],[3,4]]
+OUTPUT: 2
+REASONING:
+Step 1: Initially 5 components.
+Step 2: Unite 0,1: components=4. Unite 1,2: components=3. Unite 3,4: components=2.
+Step 3: Answer = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> p; int comps;
+    DSU(int n):p(n),comps(n){ iota(p.begin(),p.end(),0); }
+    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+    void unite(int x,int y){ x=find(x);y=find(y); if(x!=y){p[x]=y;comps--;} }
+};
+int countComponents(int n, vector<vector<int>>& edges){
+    DSU dsu(n);
+    for(auto& e:edges) dsu.unite(e[0],e[1]);
+    return dsu.comps;
+}
+int main(){
+    vector<vector<int>> e={{0,1},{1,2},{3,4}};
+    cout<<countComponents(5,e)<<endl; // 2
+}
+```
+
+--- Problem 49 ---
+TITLE: Redundant Connection (Union Find)
+DIFFICULTY: Medium
+PROBLEM: Find the edge that creates a cycle in undirected graph with n nodes and n edges.
+INPUT: edges=[[1,2],[1,3],[2,3]]
+OUTPUT: [2,3]
+REASONING:
+Step 1: Process edges in order. Unite 1,2: ok. Unite 1,3: ok.
+Step 2: Unite 2,3: find(2)=find(1) (root), find(3)=find(1). Same root! This edge creates cycle.
+Step 3: Return [2,3].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> p,r;
+    DSU(int n):p(n+1),r(n+1,0){ iota(p.begin(),p.end(),0); }
+    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+    bool unite(int x,int y){
+        x=find(x);y=find(y); if(x==y) return false;
+        if(r[x]<r[y]) swap(x,y); p[y]=x; if(r[x]==r[y]) r[x]++;
+        return true;
+    }
+};
+vector<int> findRedundantConnection(vector<vector<int>>& edges){
+    DSU dsu(edges.size());
+    for(auto& e:edges) if(!dsu.unite(e[0],e[1])) return e;
+    return {};
+}
+int main(){
+    vector<vector<int>> e={{1,2},{1,3},{2,3}};
+    auto r=findRedundantConnection(e);
+    cout<<r[0]<<" "<<r[1]<<endl; // 2 3
+}
+```
+
+--- Problem 50 ---
+TITLE: Accounts Merge (Union Find + HashMap)
+DIFFICULTY: Medium
+PROBLEM: Merge accounts that share emails.
+INPUT: accounts=[["John","johnsmith@mail.com","john_newyork@mail.com"],["John","johnsmith@mail.com","john00@mail.com"],["Mary","mary@mail.com"],["John","johnnybravo@mail.com"]]
+OUTPUT: Merged accounts grouped by shared emails
+REASONING:
+Step 1: Map each email to an account index. Use DSU on account indices.
+Step 2: For each account, union all its emails to the first email's root.
+Step 3: Group emails by DSU root. Merge accounts with same root.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> p; DSU(int n):p(n){ iota(p.begin(),p.end(),0); }
+    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+    void unite(int x,int y){ p[find(x)]=find(y); }
+};
+vector<vector<string>> accountsMerge(vector<vector<string>>& accounts){
+    DSU dsu(accounts.size());
+    map<string,int> emailToIdx;
+    for(int i=0;i<accounts.size();i++)
+        for(int j=1;j<accounts[i].size();j++){
+            if(emailToIdx.count(accounts[i][j])) dsu.unite(i,emailToIdx[accounts[i][j]]);
+            else emailToIdx[accounts[i][j]]=i;
+        }
+    map<int,set<string>> groups;
+    for(auto& [email,idx]:emailToIdx) groups[dsu.find(idx)].insert(email);
+    vector<vector<string>> res;
+    for(auto& [idx,emails]:groups){
+        vector<string> acc={accounts[idx][0]};
+        acc.insert(acc.end(),emails.begin(),emails.end());
+        res.push_back(acc);
+    }
+    return res;
+}
+int main(){
+    vector<vector<string>> a={{"John","johnsmith@mail.com","john_newyork@mail.com"},
+                               {"John","johnsmith@mail.com","john00@mail.com"},
+                               {"Mary","mary@mail.com"},{"John","johnnybravo@mail.com"}};
+    for(auto& acc:accountsMerge(a)){ for(auto& s:acc) cout<<s<<" "; cout<<"\n"; }
+}
+```
+
+--- Problem 51 ---
+TITLE: Minimum Spanning Tree — Kruskal's
+DIFFICULTY: Medium
+PROBLEM: Find MST weight using Kruskal's algorithm.
+INPUT: n=4, edges=[[0,1,1],[0,2,4],[1,2,2],[1,3,5],[2,3,1]]
+OUTPUT: 4
+REASONING:
+Step 1: Sort edges by weight: (0,1,1),(2,3,1),(1,2,2),(0,2,4),(1,3,5).
+Step 2: Add (0,1): w=1. MST weight=1. Add (2,3): w=1. MST=2.
+Step 3: Add (1,2): w=2. Connects component {0,1} with {2,3}. MST=4. Done (n-1=3 edges).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> p,r; DSU(int n):p(n),r(n,0){ iota(p.begin(),p.end(),0); }
+    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+    bool unite(int x,int y){
+        x=find(x);y=find(y); if(x==y) return false;
+        if(r[x]<r[y]) swap(x,y); p[y]=x; if(r[x]==r[y]) r[x]++; return true;
+    }
+};
+int kruskal(int n, vector<vector<int>>& edges){
+    sort(edges.begin(),edges.end(),[](auto& a,auto& b){return a[2]<b[2];});
+    DSU dsu(n); int weight=0;
+    for(auto& e:edges) if(dsu.unite(e[0],e[1])) weight+=e[2];
+    return weight;
+}
+int main(){
+    vector<vector<int>> e={{0,1,1},{0,2,4},{1,2,2},{1,3,5},{2,3,1}};
+    cout<<kruskal(4,e)<<endl; // 4
+}
+```
+
+--- Problem 52 ---
+TITLE: Satisfiability of Equality Equations
+DIFFICULTY: Medium
+PROBLEM: Given equations like "a==b" and "a!=b", check if satisfiable.
+INPUT: equations=["a==b","b!=c","b==c"]
+OUTPUT: false
+REASONING:
+Step 1: Process all "==" equations first. Union a,b. Union b,c.
+Step 2: Process "!=" equations. Check if a,b should be unequal: find(b)==find(c) but b!=c says they're different. Contradiction!
+Step 3: Return false.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    int p[26]; DSU(){ iota(p,p+26,0); }
+    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+    void unite(int x,int y){ p[find(x)]=find(y); }
+};
+bool equationsPossible(vector<string>& eq){
+    DSU dsu;
+    for(auto& e:eq) if(e[1]=='=') dsu.unite(e[0]-'a',e[3]-'a');
+    for(auto& e:eq) if(e[1]=='!' && dsu.find(e[0]-'a')==dsu.find(e[3]-'a')) return false;
+    return true;
+}
+int main(){
+    vector<string> eq={"a==b","b!=c","b==c"};
+    cout<<equationsPossible(eq)<<endl; // 0
+}
+```
+
+--- Problem 53 ---
+TITLE: Number of Islands II (Online Union Find)
+DIFFICULTY: Hard
+PROBLEM: Start with empty grid. Add land cells one by one. After each addition, return number of islands.
+INPUT: m=3, n=3, positions=[[0,0],[0,1],[1,2],[2,1]]
+OUTPUT: [1,1,2,3]
+REASONING:
+Step 1: Start empty. Add (0,0): island=1. Output 1.
+Step 2: Add (0,1): adjacent to (0,0). Union -> island=1. Output 1.
+Step 3: Add (1,2): no land neighbors. island=2. Output 2.
+Step 4: Add (2,1): no land neighbors. island=3. Output 3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> p,r; int comps=0;
+    DSU(int n):p(n,-1),r(n,0){}
+    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+    bool unite(int x,int y){
+        x=find(x);y=find(y); if(x==y) return false;
+        if(r[x]<r[y]) swap(x,y); p[y]=x; if(r[x]==r[y]) r[x]++;
+        comps--; return true;
+    }
+    void add(int x){ p[x]=x; comps++; }
+};
+vector<int> numIslands2(int m, int n, vector<vector<int>>& pos){
+    DSU dsu(m*n); vector<int> res;
+    int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+    for(auto& p:pos){
+        int x=p[0],y=p[1],id=x*n+y;
+        dsu.add(id);
+        for(int d=0;d<4;d++){
+            int nx=x+dx[d],ny=y+dy[d],nid=nx*n+ny;
+            if(nx>=0&&nx<m&&ny>=0&&ny<n&&dsu.p[nid]!=-1) dsu.unite(id,nid);
+        }
+        res.push_back(dsu.comps);
+    }
+    return res;
+}
+int main(){
+    vector<vector<int>> pos={{0,0},{0,1},{1,2},{2,1}};
+    for(int x:numIslands2(3,3,pos)) cout<<x<<" "; // 1 1 2 3
+}
+```
+
+================================================================================
+CATEGORY 7: DYNAMIC PROGRAMMING (Problems 54–90)
+================================================================================
+
+--- Problem 54 ---
+TITLE: Longest Increasing Subsequence (LIS) — O(n²)
+DIFFICULTY: Medium
+PROBLEM: Find the length of the longest strictly increasing subsequence.
+INPUT: nums=[10,9,2,5,3,7,101,18]
+OUTPUT: 4
+REASONING:
+Step 1: dp[i] = LIS ending at index i.
+Step 2: dp=[1,1,1,2,2,3,4,4].
+Step 3: For i=5 (7): check all j<5 where nums[j]<7. j=2(2),j=3(5),j=4(3). dp[5]=max(dp[2],dp[3],dp[4])+1=3.
+Step 4: For i=6 (101): all j<6 with nums[j]<101. Max dp = dp[5]=3. dp[6]=4.
+Step 5: Max of dp = 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int lengthOfLIS(vector<int>& nums){
+    int n=nums.size();
+    vector<int> dp(n,1);
+    for(int i=1;i<n;i++)
+        for(int j=0;j<i;j++)
+            if(nums[j]<nums[i]) dp[i]=max(dp[i],dp[j]+1);
+    return *max_element(dp.begin(),dp.end());
+}
+int main(){
+    vector<int> nums={10,9,2,5,3,7,101,18};
+    cout<<lengthOfLIS(nums)<<endl; // 4
+}
+```
+
+--- Problem 55 ---
+TITLE: LIS — O(n log n) with Patience Sorting
+DIFFICULTY: Medium
+PROBLEM: Find LIS length in O(n log n).
+INPUT: nums=[10,9,2,5,3,7,101,18]
+OUTPUT: 4
+REASONING:
+Step 1: Maintain tails array. For each num, use lower_bound to find position.
+Step 2: 10: tails=[10]. 9: replace 10 -> [9]. 2: replace 9 -> [2].
+Step 3: 5: append -> [2,5]. 3: replace 5 -> [2,3]. 7: append -> [2,3,7].
+Step 4: 101: append -> [2,3,7,101]. 18: replace 101 -> [2,3,7,18].
+Step 5: Length of tails = 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int lengthOfLIS(vector<int>& nums){
+    vector<int> tails;
+    for(int x:nums){
+        auto it=lower_bound(tails.begin(),tails.end(),x);
+        if(it==tails.end()) tails.push_back(x);
+        else *it=x;
+    }
+    return tails.size();
+}
+int main(){
+    vector<int> nums={10,9,2,5,3,7,101,18};
+    cout<<lengthOfLIS(nums)<<endl; // 4
+}
+```
+
+--- Problem 56 ---
+TITLE: Coin Change (Min Coins)
+DIFFICULTY: Medium
+PROBLEM: Given coin denominations and amount, find minimum coins to make amount.
+INPUT: coins=[1,5,6,9], amount=11
+OUTPUT: 2
+REASONING:
+Step 1: dp[0]=0. dp[i] = min coins for amount i.
+Step 2: dp[5]=1(5). dp[6]=1(6). dp[9]=1(9).
+Step 3: dp[10]=2(5+5). dp[11]=2(5+6).
+Step 4: Answer = dp[11] = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int coinChange(vector<int>& coins, int amount){
+    vector<int> dp(amount+1,INT_MAX);
+    dp[0]=0;
+    for(int i=1;i<=amount;i++)
+        for(int c:coins)
+            if(c<=i && dp[i-c]!=INT_MAX)
+                dp[i]=min(dp[i],dp[i-c]+1);
+    return dp[amount]==INT_MAX?-1:dp[amount];
+}
+int main(){
+    vector<int> coins={1,5,6,9};
+    cout<<coinChange(coins,11)<<endl; // 2
+}
+```
+
+--- Problem 57 ---
+TITLE: Coin Change II (Number of Combinations)
+DIFFICULTY: Medium
+PROBLEM: Count number of combinations to make amount.
+INPUT: coins=[1,2,5], amount=5
+OUTPUT: 4
+REASONING:
+Step 1: dp[0]=1 (empty combination). Process coins one by one.
+Step 2: With coin 1: dp=[1,1,1,1,1,1].
+Step 3: With coin 2: dp[2]+=dp[0]=2, dp[3]+=dp[1]=2, dp[4]+=dp[2]=3, dp[5]+=dp[3]=3. dp=[1,1,2,2,3,3].
+Step 4: With coin 5: dp[5]+=dp[0]=1. dp[5]=4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int change(int amount, vector<int>& coins){
+    vector<long long> dp(amount+1,0);
+    dp[0]=1;
+    for(int c:coins)
+        for(int i=c;i<=amount;i++)
+            dp[i]+=dp[i-c];
+    return dp[amount];
+}
+int main(){
+    vector<int> coins={1,2,5};
+    cout<<change(5,coins)<<endl; // 4
+}
+```
+
+--- Problem 58 ---
+TITLE: 0/1 Knapsack
+DIFFICULTY: Medium
+PROBLEM: n items with weights and values. Knapsack capacity W. Maximize value.
+INPUT: weights=[1,3,4,5], values=[1,4,5,7], W=7
+OUTPUT: 9
+REASONING:
+Step 1: dp[i][w] = max value using first i items with capacity w.
+Step 2: dp[0][w]=0 for all w. dp[i][w]=max(dp[i-1][w], dp[i-1][w-weight[i]]+value[i]) if w>=weight[i].
+Step 3: Compute: item 3 (w=4,v=5) + item 4 (w=3,v=4) = 7 weight, 9 value.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int knapsack(vector<int>& w, vector<int>& v, int W){
+    int n=w.size();
+    vector<int> dp(W+1,0);
+    for(int i=0;i<n;i++)
+        for(int cap=W;cap>=w[i];cap--)
+            dp[cap]=max(dp[cap],dp[cap-w[i]]+v[i]);
+    return dp[W];
+}
+int main(){
+    vector<int> w={1,3,4,5}, v={1,4,5,7};
+    cout<<knapsack(w,v,7)<<endl; // 9
+}
+```
+
+--- Problem 59 ---
+TITLE: Unbounded Knapsack
+DIFFICULTY: Medium
+PROBLEM: Same as 0/1 knapsack but items can be used unlimited times.
+INPUT: weights=[1,3,4,5], values=[1,4,5,7], W=8
+OUTPUT: 12
+REASONING:
+Step 1: Can reuse items. Iterate forward in dp.
+Step 2: dp[0]=0. For each capacity, try all items.
+Step 3: dp[3]=4 (one item w=3,v=4). dp[6]=8 (two items w=3). dp[8]=12 (3+5 or 4+4? 3+3+? = 3*3=9? No: 4+4=8weight? w=3,v=4 twice = 8 value but w=6). w=1 twice + w=3 twice? Best: 3+5=8 weight, 4+7=11. Or w=4+4=8, v=5+5=10. Or w=3+5=8, v=4+7=11. Or 4*w1=4, v=4. Or w=3+3+1+1=8, v=4+4+1+1=10. Hmm. Actually w=3+5=8: v=11. But dp should give 12? Let me check: 8*w=1,v=1 gives 8. w=3 twice + w=1 twice = 8+2=10. Actually best might be different inputs. Let me recompute: values correct for W=8 with given items? Best: use item[1] (w=3,v=4) twice and item[0] (w=1,v=1) twice = w=8, v=10. Or item[2] (w=4,v=5) twice = w=8, v=10. Or item[3](w=5,v=7)+item[1](w=3,v=4)=8,11. Or item[1] x2 + item[0] x2 = 10. So answer = 11 for these inputs. Let me use correct output.
+OUTPUT: 11
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int unboundedKnapsack(vector<int>& wt, vector<int>& val, int W){
+    vector<int> dp(W+1,0);
+    for(int cap=1;cap<=W;cap++)
+        for(int i=0;i<wt.size();i++)
+            if(wt[i]<=cap) dp[cap]=max(dp[cap],dp[cap-wt[i]]+val[i]);
+    return dp[W];
+}
+int main(){
+    vector<int> w={1,3,4,5}, v={1,4,5,7};
+    cout<<unboundedKnapsack(w,v,8)<<endl; // 11
+}
+```
+
+--- Problem 60 ---
+TITLE: Edit Distance (Levenshtein)
+DIFFICULTY: Medium
+PROBLEM: Find minimum operations (insert/delete/replace) to transform word1 to word2.
+INPUT: word1="horse", word2="ros"
+OUTPUT: 3
+REASONING:
+Step 1: dp[i][j] = edit distance between word1[0..i-1] and word2[0..j-1].
+Step 2: Base: dp[i][0]=i, dp[0][j]=j.
+Step 3: If word1[i-1]==word2[j-1]: dp[i][j]=dp[i-1][j-1].
+Step 4: Else dp[i][j]=1+min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]).
+Step 5: horse->rorse(replace h->r), rorse->rose(delete r), rose->ros(delete e). Total=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minDistance(string w1, string w2){
+    int m=w1.size(), n=w2.size();
+    vector<vector<int>> dp(m+1,vector<int>(n+1,0));
+    for(int i=0;i<=m;i++) dp[i][0]=i;
+    for(int j=0;j<=n;j++) dp[0][j]=j;
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++){
+        if(w1[i-1]==w2[j-1]) dp[i][j]=dp[i-1][j-1];
+        else dp[i][j]=1+min({dp[i-1][j],dp[i][j-1],dp[i-1][j-1]});
+    }
+    return dp[m][n];
+}
+int main(){cout<<minDistance("horse","ros")<<endl;} // 3
+```
+
+--- Problem 61 ---
+TITLE: Longest Common Subsequence (LCS)
+DIFFICULTY: Medium
+PROBLEM: Find LCS length of two strings.
+INPUT: text1="abcde", text2="ace"
+OUTPUT: 3
+REASONING:
+Step 1: dp[i][j] = LCS length of text1[0..i-1] and text2[0..j-1].
+Step 2: If text1[i-1]==text2[j-1]: dp[i][j]=dp[i-1][j-1]+1. Else max(dp[i-1][j],dp[i][j-1]).
+Step 3: Build table. dp[5][3] = 3 (LCS = "ace").
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int longestCommonSubsequence(string t1, string t2){
+    int m=t1.size(), n=t2.size();
+    vector<vector<int>> dp(m+1,vector<int>(n+1,0));
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++)
+        dp[i][j]= t1[i-1]==t2[j-1] ? dp[i-1][j-1]+1 : max(dp[i-1][j],dp[i][j-1]);
+    return dp[m][n];
+}
+int main(){cout<<longestCommonSubsequence("abcde","ace")<<endl;} // 3
+```
+
+--- Problem 62 ---
+TITLE: Matrix Chain Multiplication
+DIFFICULTY: Hard
+PROBLEM: Find minimum scalar multiplications to multiply chain of matrices.
+INPUT: dims=[40,20,30,10,30] (matrices: 40x20, 20x30, 30x10, 10x30)
+OUTPUT: 26000
+REASONING:
+Step 1: dp[i][j] = min operations to multiply matrices i to j.
+Step 2: For length 2: dp[0][1]=40*20*30=24000, dp[1][2]=20*30*10=6000, dp[2][3]=30*10*30=9000.
+Step 3: For length 3: dp[0][2]=min(dp[0][0]+dp[1][2]+40*20*10, dp[0][1]+dp[2][2]+40*30*10)=min(0+6000+8000,24000+0+12000)=14000.
+Step 4: dp[0][3]=min over k. Answer=26000.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int matrixChainOrder(vector<int>& p){
+    int n=p.size()-1;
+    vector<vector<int>> dp(n,vector<int>(n,0));
+    for(int len=2;len<=n;len++)
+        for(int i=0;i<=n-len;i++){
+            int j=i+len-1; dp[i][j]=INT_MAX;
+            for(int k=i;k<j;k++)
+                dp[i][j]=min(dp[i][j],dp[i][k]+dp[k+1][j]+p[i]*p[k+1]*p[j+1]);
+        }
+    return dp[0][n-1];
+}
+int main(){
+    vector<int> p={40,20,30,10,30};
+    cout<<matrixChainOrder(p)<<endl; // 26000
+}
+```
+
+--- Problem 63 ---
+TITLE: Palindrome Partitioning (Min Cuts)
+DIFFICULTY: Hard
+PROBLEM: Find minimum cuts to partition string into palindromes.
+INPUT: s="aab"
+OUTPUT: 1
+REASONING:
+Step 1: Is "aab" palindrome? No. Try cuts.
+Step 2: Cut after "a": "a" + "ab". "a" is palindrome, "ab" is not.
+Step 3: Cut after "aa": "aa" + "b". Both palindromes. 1 cut!
+Step 4: Answer = 1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minCut(string s){
+    int n=s.size();
+    vector<vector<bool>> pal(n,vector<bool>(n,false));
+    for(int i=n-1;i>=0;i--) for(int j=i;j<n;j++)
+        pal[i][j]=(s[i]==s[j])&&(j-i<=2||pal[i+1][j-1]);
+    vector<int> dp(n,0);
+    for(int i=1;i<n;i++){
+        if(pal[0][i]){ dp[i]=0; continue; }
+        dp[i]=i;
+        for(int j=1;j<=i;j++) if(pal[j][i]) dp[i]=min(dp[i],dp[j-1]+1);
+    }
+    return dp[n-1];
+}
+int main(){cout<<minCut("aab")<<endl;} // 1
+```
+
+--- Problem 64 ---
+TITLE: Burst Balloons (Interval DP)
+DIFFICULTY: Hard
+PROBLEM: Burst all balloons to maximize coins. Coins = nums[left]*nums[i]*nums[right].
+INPUT: nums=[3,1,5,8]
+OUTPUT: 167
+REASONING:
+Step 1: Add boundary 1s: [1,3,1,5,8,1]. dp[i][j] = max coins bursting balloons between i and j (exclusive).
+Step 2: For each interval [i,j], try each k as last balloon. dp[i][j]=max(dp[i][k]+nums[i]*nums[k]*nums[j]+dp[k][j]).
+Step 3: dp[0][5] = 167.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int maxCoins(vector<int>& nums){
+    nums.insert(nums.begin(),1); nums.push_back(1);
+    int n=nums.size();
+    vector<vector<int>> dp(n,vector<int>(n,0));
+    for(int len=2;len<n;len++)
+        for(int i=0;i+len<n;i++){
+            int j=i+len;
+            for(int k=i+1;k<j;k++)
+                dp[i][j]=max(dp[i][j],dp[i][k]+nums[i]*nums[k]*nums[j]+dp[k][j]);
+        }
+    return dp[0][n-1];
+}
+int main(){
+    vector<int> nums={3,1,5,8};
+    cout<<maxCoins(nums)<<endl; // 167
+}
+```
+
+--- Problem 65 ---
+TITLE: Longest Palindromic Subsequence
+DIFFICULTY: Medium
+PROBLEM: Find length of longest palindromic subsequence in a string.
+INPUT: s="bbbab"
+OUTPUT: 4
+REASONING:
+Step 1: dp[i][j] = LPS length of s[i..j].
+Step 2: All single chars: dp[i][i]=1.
+Step 3: For len=2: dp[1][2]=2 (bb), others=1.
+Step 4: For len=3: dp[0][2]="bbb"=3. dp[1][3]="bab"=3.
+Step 5: dp[0][4]="bbbab": s[0]='b'==s[4]='b', so dp[0][4]=dp[1][3]+2=5? Hmm wait s="bbbab", s[4]='b'. dp[0][4]=dp[1][3]+2=3+2=5? But answer is 4 ("bbbb"). Let me check: "bbbab" LPS = "bbbb"? No 4 b's but there's a 4th b at positions 0,1,2,4. LPS "bbbb"=4. So dp[0][4]=4. Let me re-examine.
+Step 6: Actually s[0]=b,s[1]=b,s[2]=b,s[3]=a,s[4]=b. s[0]==s[4]=b. dp[0][4]=dp[1][3]+2. dp[1][3]="bba". LPS of "bba"="bb"=2. So dp[0][4]=4. Correct.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int longestPalindromeSubseq(string s){
+    int n=s.size();
+    vector<vector<int>> dp(n,vector<int>(n,0));
+    for(int i=0;i<n;i++) dp[i][i]=1;
+    for(int len=2;len<=n;len++)
+        for(int i=0;i+len-1<n;i++){
+            int j=i+len-1;
+            if(s[i]==s[j]) dp[i][j]=dp[i+1][j-1]+2;
+            else dp[i][j]=max(dp[i+1][j],dp[i][j-1]);
+        }
+    return dp[0][n-1];
+}
+int main(){cout<<longestPalindromeSubseq("bbbab")<<endl;} // 4
+```
+
+--- Problem 66 ---
+TITLE: Regular Expression Matching
+DIFFICULTY: Hard
+PROBLEM: Implement regex matching with '.' and '*'.
+INPUT: s="aab", p="c*a*b"
+OUTPUT: true
+REASONING:
+Step 1: dp[i][j] = s[0..i-1] matches p[0..j-1].
+Step 2: dp[0][0]=true. dp[0][j]: '*' can eliminate preceding char.
+Step 3: For p="c*a*b": dp[0][2]=(p[1]=='*')&&dp[0][0]=true. dp[0][4]=(p[3]=='*')&&dp[0][2]=true.
+Step 4: Build dp. dp[3][5]=true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool isMatch(string s, string p){
+    int m=s.size(), n=p.size();
+    vector<vector<bool>> dp(m+1,vector<bool>(n+1,false));
+    dp[0][0]=true;
+    for(int j=2;j<=n;j++) if(p[j-1]=='*') dp[0][j]=dp[0][j-2];
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++){
+        if(p[j-1]=='*'){
+            dp[i][j]=dp[i][j-2]||(j>=2&&(p[j-2]=='.'||p[j-2]==s[i-1])&&dp[i-1][j]);
+        } else {
+            dp[i][j]=(p[j-1]=='.'||p[j-1]==s[i-1])&&dp[i-1][j-1];
+        }
+    }
+    return dp[m][n];
+}
+int main(){cout<<isMatch("aab","c*a*b")<<endl;} // 1
+```
+
+--- Problem 67 ---
+TITLE: Wildcard Matching
+DIFFICULTY: Hard
+PROBLEM: Wildcard matching with '?' (any single char) and '*' (any sequence including empty).
+INPUT: s="adceb", p="*a*b"
+OUTPUT: true
+REASONING:
+Step 1: dp[i][j] = s[0..i-1] matches p[0..j-1].
+Step 2: '*' matches any sequence: dp[i][j] = dp[i-1][j] (use *) or dp[i][j-1] (ignore *).
+Step 3: "adceb" matches "*a*b": * matches "", a matches a, * matches "dce", b matches b.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool isMatch(string s, string p){
+    int m=s.size(), n=p.size();
+    vector<vector<bool>> dp(m+1,vector<bool>(n+1,false));
+    dp[0][0]=true;
+    for(int j=1;j<=n;j++) if(p[j-1]=='*') dp[0][j]=dp[0][j-1];
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++){
+        if(p[j-1]=='*') dp[i][j]=dp[i-1][j]||dp[i][j-1];
+        else dp[i][j]=(p[j-1]=='?'||p[j-1]==s[i-1])&&dp[i-1][j-1];
+    }
+    return dp[m][n];
+}
+int main(){cout<<isMatch("adceb","*a*b")<<endl;} // 1
+```
+
+--- Problem 68 ---
+TITLE: Unique Paths (DP on Grid)
+DIFFICULTY: Easy
+PROBLEM: Count unique paths from top-left to bottom-right in m×n grid (only right/down).
+INPUT: m=3, n=7
+OUTPUT: 28
+REASONING:
+Step 1: dp[i][j] = paths to reach (i,j). dp[i][j]=dp[i-1][j]+dp[i][j-1].
+Step 2: First row and column all 1s.
+Step 3: dp[2][6] = 28. (Combinatorially: C(8,2)=28.)
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int uniquePaths(int m, int n){
+    vector<int> dp(n,1);
+    for(int i=1;i<m;i++) for(int j=1;j<n;j++) dp[j]+=dp[j-1];
+    return dp[n-1];
+}
+int main(){cout<<uniquePaths(3,7)<<endl;} // 28
+```
+
+--- Problem 69 ---
+TITLE: Jump Game II (Min Jumps)
+DIFFICULTY: Medium
+PROBLEM: Find minimum number of jumps to reach last index.
+INPUT: nums=[2,3,1,1,4]
+OUTPUT: 2
+REASONING:
+Step 1: Greedy DP. Track current reach and farthest reach.
+Step 2: At index 0 (val=2): can reach indices 1,2. Jump 1.
+Step 3: At indices 1-2 (vals=3,1): farthest = max(1+3,2+1)=4. Jump 2.
+Step 4: Reached index 4. 2 jumps.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int jump(vector<int>& nums){
+    int n=nums.size(), jumps=0, cur=0, far=0;
+    for(int i=0;i<n-1;i++){
+        far=max(far,i+nums[i]);
+        if(i==cur){ jumps++; cur=far; }
+    }
+    return jumps;
+}
+int main(){
+    vector<int> nums={2,3,1,1,4};
+    cout<<jump(nums)<<endl; // 2
+}
+```
+
+--- Problem 70 ---
+TITLE: Partition Equal Subset Sum
+DIFFICULTY: Medium
+PROBLEM: Can array be partitioned into two subsets with equal sum?
+INPUT: nums=[1,5,11,5]
+OUTPUT: true
+REASONING:
+Step 1: Total sum=22. Target=11. Find subset summing to 11.
+Step 2: Subset sum DP with target=11.
+Step 3: {1,5,5}=11. Yes! Return true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canPartition(vector<int>& nums){
+    int sum=accumulate(nums.begin(),nums.end(),0);
+    if(sum%2) return false;
+    int target=sum/2;
+    vector<bool> dp(target+1,false);
+    dp[0]=true;
+    for(int x:nums) for(int j=target;j>=x;j--) dp[j]=dp[j]||dp[j-x];
+    return dp[target];
+}
+int main(){
+    vector<int> nums={1,5,11,5};
+    cout<<canPartition(nums)<<endl; // 1
+}
+```
+
+--- Problem 71 ---
+TITLE: Longest Common Substring
+DIFFICULTY: Medium
+PROBLEM: Find length of longest common substring (contiguous) between two strings.
+INPUT: s1="abcde", s2="abfce"
+OUTPUT: 2
+REASONING:
+Step 1: dp[i][j] = length of common substring ending at s1[i-1] and s2[j-1].
+Step 2: If s1[i-1]==s2[j-1]: dp[i][j]=dp[i-1][j-1]+1. Else dp[i][j]=0.
+Step 3: "ab" is common (length 2). "ce" is also common (length 2). Max = 2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int longestCommonSubstring(string s1, string s2){
+    int m=s1.size(), n=s2.size(), ans=0;
+    vector<vector<int>> dp(m+1,vector<int>(n+1,0));
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++){
+        if(s1[i-1]==s2[j-1]){ dp[i][j]=dp[i-1][j-1]+1; ans=max(ans,dp[i][j]); }
+        else dp[i][j]=0;
+    }
+    return ans;
+}
+int main(){cout<<longestCommonSubstring("abcde","abfce")<<endl;} // 2
+```
+
+--- Problem 72 ---
+TITLE: Word Break
+DIFFICULTY: Medium
+PROBLEM: Can string be segmented into words from dictionary?
+INPUT: s="leetcode", wordDict=["leet","code"]
+OUTPUT: true
+REASONING:
+Step 1: dp[i] = can s[0..i-1] be segmented.
+Step 2: dp[0]=true. For i=4: check if s[0..3]="leet" in dict and dp[0]=true. dp[4]=true.
+Step 3: For i=8: check s[4..7]="code" in dict and dp[4]=true. dp[8]=true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool wordBreak(string s, vector<string>& wordDict){
+    unordered_set<string> ws(wordDict.begin(),wordDict.end());
+    int n=s.size();
+    vector<bool> dp(n+1,false);
+    dp[0]=true;
+    for(int i=1;i<=n;i++) for(int j=0;j<i;j++)
+        if(dp[j]&&ws.count(s.substr(j,i-j))){ dp[i]=true; break; }
+    return dp[n];
+}
+int main(){
+    vector<string> wd={"leet","code"};
+    cout<<wordBreak("leetcode",wd)<<endl; // 1
+}
+```
+
+--- Problem 73 ---
+TITLE: Longest Bitonic Subsequence
+DIFFICULTY: Medium
+PROBLEM: Find longest subsequence that first increases then decreases.
+INPUT: nums=[1,11,2,10,4,5,2,1]
+OUTPUT: 6
+REASONING:
+Step 1: Compute LIS from left: lis=[1,2,2,3,3,4,4,4] (wrong, recompute).
+Actually: nums=[1,11,2,10,4,5,2,1].
+lis from left: [1,2,2,3,3,4,...].
+Step 2: Compute LDS from right (LIS from right).
+Step 3: Bitonic[i] = lis[i]+lds[i]-1. Max = 6.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int longestBitonic(vector<int>& nums){
+    int n=nums.size();
+    vector<int> lis(n,1), lds(n,1);
+    for(int i=1;i<n;i++) for(int j=0;j<i;j++) if(nums[j]<nums[i]) lis[i]=max(lis[i],lis[j]+1);
+    for(int i=n-2;i>=0;i--) for(int j=i+1;j<n;j++) if(nums[j]<nums[i]) lds[i]=max(lds[i],lds[j]+1);
+    int ans=0;
+    for(int i=0;i<n;i++) ans=max(ans,lis[i]+lds[i]-1);
+    return ans;
+}
+int main(){
+    vector<int> nums={1,11,2,10,4,5,2,1};
+    cout<<longestBitonic(nums)<<endl; // 6
+}
+```
+
+--- Problem 74 ---
+TITLE: Stock Buy Sell with Cooldown
+DIFFICULTY: Medium
+PROBLEM: Max profit with cooldown (can't buy day after sell).
+INPUT: prices=[1,2,3,0,2]
+OUTPUT: 3
+REASONING:
+Step 1: States: hold (holding stock), sold (just sold), rest (cooldown over).
+Step 2: Transitions: hold=max(hold,rest-price), sold=hold+price, rest=max(rest,sold).
+Step 3: Day 0(p=1): hold=-1,sold=0,rest=0. Day 1(p=2): hold=max(-1,-0-2)=-1? Wait, rest-price=-1 for day1. hold=max(-1,0-2)=-1? Hmm but buy at 0,sell at 2 = profit 2.
+Step 4: Trace carefully: buy at 1,sell at 3 (profit 2), cooldown, buy at 0,sell at 2 (profit 2). Total=4? But answer=3. Let me check: Day4(p=2), sell: sold=hold+2. hold from day3 after cooldown at 0: hold=rest[2]-0. rest[2]=max(rest[1],sold[1])=max(0,1)=1. hold=1-0=1. sold[4]=1+2=3. Answer=max(3,2)=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int maxProfit(vector<int>& prices){
+    int hold=INT_MIN, sold=0, rest=0;
+    for(int p:prices){
+        int prev_sold=sold;
+        sold=hold+p;
+        hold=max(hold,rest-p);
+        rest=max(rest,prev_sold);
+    }
+    return max(sold,rest);
+}
+int main(){
+    vector<int> prices={1,2,3,0,2};
+    cout<<maxProfit(prices)<<endl; // 3
+}
+```
+
+--- Problem 75 ---
+TITLE: Longest Increasing Path in Matrix
+DIFFICULTY: Hard
+PROBLEM: Find length of longest strictly increasing path in matrix.
+INPUT: matrix=[[9,9,4],[6,6,8],[2,1,1]]
+OUTPUT: 4
+REASONING:
+Step 1: DFS with memoization from each cell.
+Step 2: From cell (2,0)=2: can go to (1,0)=6. From (1,0): to (0,0)=9. From (0,0): no valid moves (neighbors are 9,9). Length=3.
+Step 3: From (2,1)=1: to (2,0)=2, to (1,0)=6, to (0,0)=9. Length=4.
+Step 4: Max = 4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int m,n;
+int dx[]={0,0,1,-1}, dy[]={1,-1,0,0};
+int dfs(vector<vector<int>>& mat, vector<vector<int>>& memo, int x, int y){
+    if(memo[x][y]) return memo[x][y];
+    memo[x][y]=1;
+    for(int d=0;d<4;d++){
+        int nx=x+dx[d], ny=y+dy[d];
+        if(nx>=0&&nx<m&&ny>=0&&ny<n&&mat[nx][ny]>mat[x][y])
+            memo[x][y]=max(memo[x][y],1+dfs(mat,memo,nx,ny));
+    }
+    return memo[x][y];
+}
+int longestIncreasingPath(vector<vector<int>>& matrix){
+    m=matrix.size(); n=matrix[0].size();
+    vector<vector<int>> memo(m,vector<int>(n,0));
+    int ans=0;
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++) ans=max(ans,dfs(matrix,memo,i,j));
+    return ans;
+}
+int main(){
+    vector<vector<int>> mat={{9,9,4},{6,6,8},{2,1,1}};
+    cout<<longestIncreasingPath(mat)<<endl; // 4
+}
+```
+
+--- Problem 76 ---
+TITLE: Distinct Subsequences
+DIFFICULTY: Hard
+PROBLEM: Count distinct subsequences of s that equal t.
+INPUT: s="rabbbit", t="rabbit"
+OUTPUT: 3
+REASONING:
+Step 1: dp[i][j] = number of ways to form t[0..j-1] from s[0..i-1].
+Step 2: If s[i-1]==t[j-1]: dp[i][j]=dp[i-1][j-1]+dp[i-1][j].
+Step 3: Three ways: use 1st,2nd,3rd 'b' in "rabbbit" to form "rabbit".
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int numDistinct(string s, string t){
+    int m=s.size(), n=t.size();
+    vector<vector<long long>> dp(m+1,vector<long long>(n+1,0));
+    for(int i=0;i<=m;i++) dp[i][0]=1;
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++){
+        dp[i][j]=dp[i-1][j];
+        if(s[i-1]==t[j-1]) dp[i][j]+=dp[i-1][j-1];
+    }
+    return dp[m][n];
+}
+int main(){cout<<numDistinct("rabbbit","rabbit")<<endl;} // 3
+```
+
+--- Problem 77 ---
+TITLE: Maximum Product Subarray
+DIFFICULTY: Medium
+PROBLEM: Find contiguous subarray with maximum product.
+INPUT: nums=[2,3,-2,4]
+OUTPUT: 6
+REASONING:
+Step 1: Track both max and min products (min can become max after multiplying by negative).
+Step 2: i=0: max=2,min=2. i=1: max=6,min=3. i=2: max=max(-2,6*-2,3*-2)=max(-2,-12,-6)... wait: after negative, max=max(nums[i],prevmax*nums[i],prevmin*nums[i])=max(-2,6*-2,3*-2)=-2. min=min(-12)=-12. Overall max=6.
+Step 3: i=3(4): max=max(4,-2*4,-12*4)=max(4,-8,-48)=4. min=-48. Overall max still 6.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int maxProduct(vector<int>& nums){
+    int maxP=nums[0], minP=nums[0], ans=nums[0];
+    for(int i=1;i<nums.size();i++){
+        int tmp=maxP;
+        maxP=max({nums[i],maxP*nums[i],minP*nums[i]});
+        minP=min({nums[i],tmp*nums[i],minP*nums[i]});
+        ans=max(ans,maxP);
+    }
+    return ans;
+}
+int main(){
+    vector<int> nums={2,3,-2,4};
+    cout<<maxProduct(nums)<<endl; // 6
+}
+```
+
+--- Problem 78 ---
+TITLE: Egg Drop Problem
+DIFFICULTY: Hard
+PROBLEM: k eggs, n floors. Find minimum trials in worst case to find critical floor.
+INPUT: k=2, n=10
+OUTPUT: 4
+REASONING:
+Step 1: dp[t][k] = max floors testable with t trials and k eggs.
+Step 2: dp[t][k] = dp[t-1][k-1] + dp[t-1][k] + 1. (If egg breaks: test dp[t-1][k-1] floors below. If not: test dp[t-1][k] floors above, plus current floor).
+Step 3: Find min t such that dp[t][2] >= 10. dp[1][2]=1, dp[2][2]=3, dp[3][2]=6, dp[4][2]=10. Answer=4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int superEggDrop(int k, int n){
+    int t=0;
+    vector<int> dp(k+1,0);
+    while(dp[k]<n){
+        t++;
+        for(int j=k;j>=1;j--) dp[j]=dp[j-1]+dp[j]+1;
+    }
+    return t;
+}
+int main(){cout<<superEggDrop(2,10)<<endl;} // 4
+```
+
+--- Problem 79 ---
+TITLE: Interleaving String
+DIFFICULTY: Medium
+PROBLEM: Check if s3 is formed by interleaving s1 and s2.
+INPUT: s1="aabcc", s2="dbbca", s3="aadbbcbcac"
+OUTPUT: true
+REASONING:
+Step 1: dp[i][j] = can s3[0..i+j-1] be formed by interleaving s1[0..i-1] and s2[0..j-1].
+Step 2: dp[i][j] = (s1[i-1]==s3[i+j-1] && dp[i-1][j]) || (s2[j-1]==s3[i+j-1] && dp[i][j-1]).
+Step 3: Compute dp table. dp[5][5]=true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool isInterleave(string s1, string s2, string s3){
+    int m=s1.size(), n=s2.size();
+    if(m+n!=s3.size()) return false;
+    vector<vector<bool>> dp(m+1,vector<bool>(n+1,false));
+    dp[0][0]=true;
+    for(int i=1;i<=m;i++) dp[i][0]=dp[i-1][0]&&s1[i-1]==s3[i-1];
+    for(int j=1;j<=n;j++) dp[0][j]=dp[0][j-1]&&s2[j-1]==s3[j-1];
+    for(int i=1;i<=m;i++) for(int j=1;j<=n;j++)
+        dp[i][j]=(dp[i-1][j]&&s1[i-1]==s3[i+j-1])||(dp[i][j-1]&&s2[j-1]==s3[i+j-1]);
+    return dp[m][n];
+}
+int main(){cout<<isInterleave("aabcc","dbbca","aadbbcbcac")<<endl;} // 1
+```
+
+--- Problem 80 ---
+TITLE: Minimum Path Sum in Grid
+DIFFICULTY: Medium
+PROBLEM: Find path from top-left to bottom-right with minimum sum.
+INPUT: grid=[[1,3,1],[1,5,1],[4,2,1]]
+OUTPUT: 7
+REASONING:
+Step 1: dp[i][j] = min path sum to reach (i,j). dp[i][j]=grid[i][j]+min(dp[i-1][j],dp[i][j-1]).
+Step 2: dp[0]=[1,4,5]. dp[1]=[2,7,6]. dp[2]=[6,8,7].
+Step 3: Path 1->3->1->1->1=7. Answer=7.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minPathSum(vector<vector<int>>& grid){
+    int m=grid.size(), n=grid[0].size();
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++){
+        if(i==0&&j==0) continue;
+        if(i==0) grid[i][j]+=grid[i][j-1];
+        else if(j==0) grid[i][j]+=grid[i-1][j];
+        else grid[i][j]+=min(grid[i-1][j],grid[i][j-1]);
+    }
+    return grid[m-1][n-1];
+}
+int main(){
+    vector<vector<int>> g={{1,3,1},{1,5,1},{4,2,1}};
+    cout<<minPathSum(g)<<endl; // 7
+}
+```
+
+--- Problem 81 ---
+TITLE: Decode Ways
+DIFFICULTY: Medium
+PROBLEM: Count number of ways to decode digit string (A=1,...,Z=26).
+INPUT: s="226"
+OUTPUT: 3
+REASONING:
+Step 1: dp[i] = number of ways to decode s[0..i-1].
+Step 2: dp[0]=1, dp[1]=1 (s[0]='2'!=0).
+Step 3: dp[2]: s[1]='2'!=0, dp[2]+=dp[1]=1. Two-digit s[0..1]="22"<=26, dp[2]+=dp[0]=1. dp[2]=2.
+Step 4: dp[3]: s[2]='6'!=0, dp[3]+=dp[2]=2. Two-digit s[1..2]="26"<=26, dp[3]+=dp[1]=1. dp[3]=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int numDecodings(string s){
+    int n=s.size();
+    vector<int> dp(n+1,0);
+    dp[0]=1; dp[1]=(s[0]!='0')?1:0;
+    for(int i=2;i<=n;i++){
+        if(s[i-1]!='0') dp[i]+=dp[i-1];
+        int two=stoi(s.substr(i-2,2));
+        if(two>=10&&two<=26) dp[i]+=dp[i-2];
+    }
+    return dp[n];
+}
+int main(){cout<<numDecodings("226")<<endl;} // 3
+```
+
+--- Problem 82 ---
+TITLE: Triangle Minimum Path Sum
+DIFFICULTY: Medium
+PROBLEM: Find minimum path sum from top to bottom in a triangle.
+INPUT: triangle=[[2],[3,4],[6,5,7],[4,1,8,3]]
+OUTPUT: 11
+REASONING:
+Step 1: Bottom-up DP. Start from second-to-last row.
+Step 2: dp = [4,1,8,3] (last row). Process row [6,5,7]: dp=[6+min(4,1),5+min(1,8),7+min(8,3)]=[7,6,10].
+Step 3: Row [3,4]: dp=[3+min(7,6),4+min(6,10)]=[9,10].
+Step 4: Row [2]: dp=[2+min(9,10)]=11.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minimumTotal(vector<vector<int>>& tri){
+    int n=tri.size();
+    vector<int> dp=tri[n-1];
+    for(int i=n-2;i>=0;i--) for(int j=0;j<=i;j++) dp[j]=tri[i][j]+min(dp[j],dp[j+1]);
+    return dp[0];
+}
+int main(){
+    vector<vector<int>> tri={{2},{3,4},{6,5,7},{4,1,8,3}};
+    cout<<minimumTotal(tri)<<endl; // 11
+}
+```
+
+--- Problem 83 ---
+TITLE: Counting Bits
+DIFFICULTY: Easy
+PROBLEM: Count number of 1s in binary representation of 0 to n.
+INPUT: n=5
+OUTPUT: [0,1,1,2,1,2]
+REASONING:
+Step 1: dp[i] = number of 1s in binary(i).
+Step 2: dp[0]=0. For i>=1: dp[i]=dp[i>>1]+(i&1). (shift right = divide by 2, add LSB).
+Step 3: dp[1]=dp[0]+1=1. dp[2]=dp[1]+0=1. dp[3]=dp[1]+1=2. dp[4]=dp[2]+0=1. dp[5]=dp[2]+1=2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> countBits(int n){
+    vector<int> dp(n+1,0);
+    for(int i=1;i<=n;i++) dp[i]=dp[i>>1]+(i&1);
+    return dp;
+}
+int main(){
+    for(int x:countBits(5)) cout<<x<<" "; // 0 1 1 2 1 2
+}
+```
+
+--- Problem 84 ---
+TITLE: Maximal Rectangle in Histogram
+DIFFICULTY: Hard
+PROBLEM: Find the largest rectangle in a histogram.
+INPUT: heights=[2,1,5,6,2,3]
+OUTPUT: 10
+REASONING:
+Step 1: Use stack to track bars in increasing order.
+Step 2: For each bar, pop bars taller than current. Area = popped_height * (current_i - stack.top() - 1).
+Step 3: Bar 5 (i=2,h=5): bar 6 (i=3,h=6). At i=4(h=2): pop 6 -> area=6*(4-2-1)=6. Pop 5 -> area=5*(4-1-1)=10.
+Step 4: Max area=10.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int largestRectangleInHistogram(vector<int>& h){
+    h.push_back(0); stack<int> s; int ans=0;
+    for(int i=0;i<h.size();i++){
+        while(!s.empty()&&h[s.top()]>h[i]){
+            int height=h[s.top()]; s.pop();
+            int width=s.empty()?i:i-s.top()-1;
+            ans=max(ans,height*width);
+        }
+        s.push(i);
+    }
+    return ans;
+}
+int main(){
+    vector<int> h={2,1,5,6,2,3};
+    cout<<largestRectangleInHistogram(h)<<endl; // 10
+}
+```
+
+--- Problem 85 ---
+TITLE: Maximal Square
+DIFFICULTY: Medium
+PROBLEM: Find area of largest square submatrix of all 1s.
+INPUT: matrix=[["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+OUTPUT: 4
+REASONING:
+Step 1: dp[i][j] = side length of largest square with bottom-right at (i,j).
+Step 2: If matrix[i][j]='1': dp[i][j]=min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1])+1.
+Step 3: dp[2][3]=2 (2x2 square). dp[2][4]=2. Max dp=2. Area=4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int maximalSquare(vector<vector<char>>& matrix){
+    int m=matrix.size(), n=matrix[0].size(), ans=0;
+    vector<vector<int>> dp(m,vector<int>(n,0));
+    for(int i=0;i<m;i++) for(int j=0;j<n;j++){
+        if(matrix[i][j]=='1'){
+            dp[i][j]=(i&&j)?min({dp[i-1][j],dp[i][j-1],dp[i-1][j-1]})+1:1;
+            ans=max(ans,dp[i][j]);
+        }
+    }
+    return ans*ans;
+}
+int main(){
+    vector<vector<char>> m={{'1','0','1','0','0'},{'1','0','1','1','1'},{'1','1','1','1','1'},{'1','0','0','1','0'}};
+    cout<<maximalSquare(m)<<endl; // 4
+}
+```
+
+--- Problem 86 ---
+TITLE: Dice Roll Sum (Probability DP)
+DIFFICULTY: Medium
+PROBLEM: Roll n dice each with k faces. Count ways to get sum s.
+INPUT: n=2, k=6, s=7
+OUTPUT: 6
+REASONING:
+Step 1: dp[i][j] = ways to get sum j with i dice.
+Step 2: dp[1][1..6]=1 each. dp[2][j] = sum of dp[1][j-face] for face=1..6.
+Step 3: dp[2][7] = dp[1][1]+dp[1][2]+dp[1][3]+dp[1][4]+dp[1][5]+dp[1][6]=6.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int numRollsToTarget(int n, int k, int target){
+    const int MOD=1e9+7;
+    vector<vector<long long>> dp(n+1,vector<long long>(target+1,0));
+    dp[0][0]=1;
+    for(int i=1;i<=n;i++) for(int j=i;j<=target;j++) for(int f=1;f<=k&&f<=j;f++)
+        dp[i][j]=(dp[i][j]+dp[i-1][j-f])%MOD;
+    return dp[n][target];
+}
+int main(){cout<<numRollsToTarget(2,6,7)<<endl;} // 6
+```
+
+--- Problem 87 ---
+TITLE: Palindrome Substrings Count
+DIFFICULTY: Medium
+PROBLEM: Count number of palindromic substrings.
+INPUT: s="abc"
+OUTPUT: 3
+REASONING:
+Step 1: dp[i][j] = is s[i..j] a palindrome?
+Step 2: All single chars are palindromes: 3.
+Step 3: No two-char palindromes. No three-char. Total=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int countSubstrings(string s){
+    int n=s.size(), count=0;
+    vector<vector<bool>> dp(n,vector<bool>(n,false));
+    for(int i=n-1;i>=0;i--) for(int j=i;j<n;j++){
+        dp[i][j]=(s[i]==s[j])&&(j-i<=2||dp[i+1][j-1]);
+        if(dp[i][j]) count++;
+    }
+    return count;
+}
+int main(){cout<<countSubstrings("abc")<<endl;} // 3
+```
+
+--- Problem 88 ---
+TITLE: Best Time to Buy/Sell Stock with k Transactions
+DIFFICULTY: Hard
+PROBLEM: At most k transactions, maximize profit.
+INPUT: k=2, prices=[3,2,6,5,0,3]
+OUTPUT: 7
+REASONING:
+Step 1: dp[t][i] = max profit with t transactions up to day i.
+Step 2: For t=1: buy at 2, sell at 6. Profit=4.
+Step 3: For t=2: buy at 2, sell at 6 (profit 4), buy at 0, sell at 3 (profit 3). Total=7.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int maxProfit(int k, vector<int>& prices){
+    int n=prices.size();
+    if(k>=n/2){
+        int profit=0;
+        for(int i=1;i<n;i++) profit+=max(0,prices[i]-prices[i-1]);
+        return profit;
+    }
+    vector<int> buy(k,INT_MIN), sell(k,0);
+    for(int p:prices){
+        for(int i=0;i<k;i++){
+            buy[i]=max(buy[i],(i>0?sell[i-1]:0)-p);
+            sell[i]=max(sell[i],buy[i]+p);
+        }
+    }
+    return sell[k-1];
+}
+int main(){
+    vector<int> p={3,2,6,5,0,3};
+    cout<<maxProfit(2,p)<<endl; // 7
+}
+```
+
+--- Problem 89 ---
+TITLE: Number of Ways to Stay in Same Place After Steps
+DIFFICULTY: Hard
+PROBLEM: Array of size arrLen. Start at 0. Make exactly steps moves (left/right/stay). Return ways to end at 0.
+INPUT: steps=3, arrLen=2
+OUTPUT: 4
+REASONING:
+Step 1: dp[i][pos] = ways after i steps at position pos.
+Step 2: dp[0][0]=1. At each step, from pos can go left(pos-1), stay(pos), right(pos+1).
+Step 3: dp[1][0]=1(stay)+0=1. dp[1][1]=0+1(right)=1. dp[2][0]=dp[1][0]+dp[1][1]=2. dp[2][1]=dp[1][0]+dp[1][1]=2(from 0 right + from 1 stay + from 2 left=0). dp[3][0]=dp[2][0]+dp[2][1]=4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int numWays(int steps, int arrLen){
+    const int MOD=1e9+7;
+    int maxPos=min(steps/2+1,arrLen);
+    vector<long long> dp(maxPos,0);
+    dp[0]=1;
+    for(int s=0;s<steps;s++){
+        vector<long long> ndp(maxPos,0);
+        for(int p=0;p<maxPos;p++){
+            if(dp[p]==0) continue;
+            ndp[p]=(ndp[p]+dp[p])%MOD;
+            if(p>0) ndp[p-1]=(ndp[p-1]+dp[p])%MOD;
+            if(p+1<maxPos) ndp[p+1]=(ndp[p+1]+dp[p])%MOD;
+        }
+        dp=ndp;
+    }
+    return dp[0];
+}
+int main(){cout<<numWays(3,2)<<endl;} // 4
+```
+
+--- Problem 90 ---
+TITLE: Stone Game (DP / Game Theory)
+DIFFICULTY: Medium
+PROBLEM: Alex and Lee take turns picking from ends of piles. Alex goes first. Who wins?
+INPUT: piles=[5,3,4,5]
+OUTPUT: true (Alex always wins)
+REASONING:
+Step 1: Even total piles. Alex picks all even-indexed or all odd-indexed piles.
+Step 2: Even piles sum=5+4=9. Odd piles sum=3+5=8. Alex picks even -> wins.
+Step 3: Alex always wins with optimal play (proven). Return true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool stoneGame(vector<int>& piles){
+    return true; // Alex always wins (mathematical proof)
+}
+// For general DP solution:
+bool stoneGameDP(vector<int>& piles){
+    int n=piles.size();
+    vector<vector<int>> dp(n,vector<int>(n,0));
+    for(int i=0;i<n;i++) dp[i][i]=piles[i];
+    for(int len=2;len<=n;len++)
+        for(int i=0;i+len-1<n;i++){
+            int j=i+len-1;
+            dp[i][j]=max(piles[i]-dp[i+1][j],piles[j]-dp[i][j-1]);
+        }
+    return dp[0][n-1]>0;
+}
+int main(){
+    vector<int> p={5,3,4,5};
+    cout<<stoneGameDP(p)<<endl; // 1
+}
+```
+
+================================================================================
+CATEGORY 8: GREEDY (Problems 91–105)
+================================================================================
+
+--- Problem 91 ---
+TITLE: Activity Selection Problem
+DIFFICULTY: Easy
+PROBLEM: Select maximum number of non-overlapping activities.
+INPUT: start=[1,3,0,5,8,5], end=[2,4,6,7,9,9]
+OUTPUT: 4
+REASONING:
+Step 1: Sort by end time: [(1,2),(3,4),(0,6),(5,7),(8,9),(5,9)].
+Step 2: Select (1,2). Last end=2.
+Step 3: (3,4): start=3>=2. Select. Last end=4.
+Step 4: (0,6): start=0<4. Skip.
+Step 5: (5,7): start=5>=4. Select. Last end=7.
+Step 6: (8,9): start=8>=7. Select. Last end=9.
+Step 7: (5,9): start=5<9. Skip. Total=4.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int activitySelection(vector<int>& start, vector<int>& end){
+    int n=start.size();
+    vector<pair<int,int>> acts(n);
+    for(int i=0;i<n;i++) acts[i]={end[i],start[i]};
+    sort(acts.begin(),acts.end());
+    int count=1, lastEnd=acts[0].first;
+    for(int i=1;i<n;i++) if(acts[i].second>=lastEnd){ count++; lastEnd=acts[i].first; }
+    return count;
+}
+int main(){
+    vector<int> s={1,3,0,5,8,5}, e={2,4,6,7,9,9};
+    cout<<activitySelection(s,e)<<endl; // 4
+}
+```
+
+--- Problem 92 ---
+TITLE: Fractional Knapsack
+DIFFICULTY: Easy
+PROBLEM: Maximize value with fractional items allowed (greedy by value/weight ratio).
+INPUT: weights=[10,20,30], values=[60,100,120], W=50
+OUTPUT: 240.0
+REASONING:
+Step 1: Compute ratios: [6,5,4]. Sort descending: [(60,10,6),(100,20,5),(120,30,4)].
+Step 2: Take all of item 1 (10kg): value=60. Remaining=40.
+Step 3: Take all of item 2 (20kg): value+=100. Remaining=20.
+Step 4: Take 20/30 of item 3: value+=120*(20/30)=80.
+Step 5: Total=240.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+double fractionalKnapsack(vector<int>& w, vector<int>& v, int W){
+    int n=w.size();
+    vector<pair<double,int>> items(n);
+    for(int i=0;i<n;i++) items[i]={(double)v[i]/w[i],i};
+    sort(items.rbegin(),items.rend());
+    double total=0; int rem=W;
+    for(auto [ratio,i]:items){
+        if(rem<=0) break;
+        int take=min(rem,w[i]);
+        total+=take*(double)v[i]/w[i];
+        rem-=take;
+    }
+    return total;
+}
+int main(){
+    vector<int> w={10,20,30}, v={60,100,120};
+    cout<<fractionalKnapsack(w,v,50)<<endl; // 240
+}
+```
+
+--- Problem 93 ---
+TITLE: Minimum Platforms (Train Scheduling)
+DIFFICULTY: Medium
+PROBLEM: Find minimum platforms needed so no train waits.
+INPUT: arrival=[900,940,950,1100,1500,1800], departure=[910,1200,1120,1130,1900,2000]
+OUTPUT: 3
+REASONING:
+Step 1: Sort arrivals and departures separately.
+Step 2: Two pointers: count simultaneous trains.
+Step 3: At 900: +1=1. 940: +1=2. 950: +1=3. 910(dep): -1=2. 1100: +1=3. 1120(dep): -1=2. Max=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int minPlatforms(vector<int>& arr, vector<int>& dep){
+    sort(arr.begin(),arr.end()); sort(dep.begin(),dep.end());
+    int n=arr.size(), platforms=1, maxP=1;
+    int i=1, j=0;
+    while(i<n){
+        if(arr[i]<=dep[j]){ platforms++; i++; }
+        else { platforms--; j++; }
+        maxP=max(maxP,platforms);
+    }
+    return maxP;
+}
+int main(){
+    vector<int> a={900,940,950,1100,1500,1800}, d={910,1200,1120,1130,1900,2000};
+    cout<<minPlatforms(a,d)<<endl; // 3
+}
+```
+
+--- Problem 94 ---
+TITLE: Huffman Encoding (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Build Huffman tree and find weighted path length.
+INPUT: chars=['a','b','c','d','e','f'], freq=[5,9,12,13,16,45]
+OUTPUT: 224
+REASONING:
+Step 1: Use min-heap. Extract two minimums, merge, insert sum.
+Step 2: Min heap: [5,9,12,13,16,45]. Extract 5,9 -> merge 14. Heap: [12,13,14,16,45].
+Step 3: Extract 12,13 -> merge 25. Heap: [14,16,25,45].
+Step 4: Extract 14,16 -> merge 30. Heap: [25,30,45].
+Step 5: Extract 25,30 -> merge 55. Heap: [45,55]. Extract 45,55 -> merge 100.
+Step 6: Total cost = 14+25+30+55+100=224.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int huffmanCost(vector<int>& freq){
+    priority_queue<int,vector<int>,greater<int>> pq(freq.begin(),freq.end());
+    int cost=0;
+    while(pq.size()>1){
+        int a=pq.top();pq.pop(); int b=pq.top();pq.pop();
+        cost+=a+b; pq.push(a+b);
+    }
+    return cost;
+}
+int main(){
+    vector<int> f={5,9,12,13,16,45};
+    cout<<huffmanCost(f)<<endl; // 224
+}
+```
+
+--- Problem 95 ---
+TITLE: Gas Station (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Find starting gas station to complete circuit. Stations with gas[i], cost[i] to next.
+INPUT: gas=[1,2,3,4,5], cost=[3,4,5,1,2]
+OUTPUT: 3
+REASONING:
+Step 1: If total gas >= total cost, solution exists.
+Step 2: Total gas=15, total cost=15. Feasible.
+Step 3: Greedy: start=0. Tank runs out at some point. Restart after failure point.
+Step 4: From 0: 1-3=-2<0. From 1: 2-4=-2<0. From 2: 3-5=-2<0. From 3: 4-1=3, 3+5-2=6, 6+1-3=4, 4+2-4=2, 2+3-5=0. Success! Start=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int canCompleteCircuit(vector<int>& gas, vector<int>& cost){
+    int total=0, tank=0, start=0;
+    for(int i=0;i<gas.size();i++){
+        int diff=gas[i]-cost[i];
+        tank+=diff; total+=diff;
+        if(tank<0){ start=i+1; tank=0; }
+    }
+    return total>=0?start:-1;
+}
+int main(){
+    vector<int> g={1,2,3,4,5}, c={3,4,5,1,2};
+    cout<<canCompleteCircuit(g,c)<<endl; // 3
+}
+```
+
+--- Problem 96 ---
+TITLE: Assign Cookies (Greedy)
+DIFFICULTY: Easy
+PROBLEM: Assign cookies (sizes s[i]) to children (greed g[i]). Maximize satisfied children.
+INPUT: g=[1,2,3], s=[1,1]
+OUTPUT: 1
+REASONING:
+Step 1: Sort both arrays. Use two pointers.
+Step 2: Smallest cookie (1) satisfies child with greed 1. Give it.
+Step 3: Next cookie (1) doesn't satisfy child with greed 2. Skip.
+Step 4: No more cookies. 1 child satisfied.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int findContentChildren(vector<int>& g, vector<int>& s){
+    sort(g.begin(),g.end()); sort(s.begin(),s.end());
+    int i=0, j=0;
+    while(i<g.size()&&j<s.size()){ if(s[j]>=g[i]) i++; j++; }
+    return i;
+}
+int main(){
+    vector<int> g={1,2,3}, s={1,1};
+    cout<<findContentChildren(g,s)<<endl; // 1
+}
+```
+
+--- Problem 97 ---
+TITLE: Minimum Number of Arrows to Burst Balloons
+DIFFICULTY: Medium
+PROBLEM: Balloons as intervals. Shoot vertical arrows. Find minimum arrows to burst all.
+INPUT: points=[[10,16],[2,8],[1,6],[7,12]]
+OUTPUT: 2
+REASONING:
+Step 1: Sort by end. [[1,6],[2,8],[7,12],[10,16]].
+Step 2: Arrow at 6: bursts [1,6],[2,8]. Arrow at 12: bursts [7,12],[10,16]. Total=2.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int findMinArrowShots(vector<vector<int>>& points){
+    sort(points.begin(),points.end(),[](auto& a,auto& b){return a[1]<b[1];});
+    int arrows=1, end=points[0][1];
+    for(int i=1;i<points.size();i++) if(points[i][0]>end){ arrows++; end=points[i][1]; }
+    return arrows;
+}
+int main(){
+    vector<vector<int>> p={{10,16},{2,8},{1,6},{7,12}};
+    cout<<findMinArrowShots(p)<<endl; // 2
+}
+```
+
+--- Problem 98 ---
+TITLE: Jump Game I (Greedy)
+DIFFICULTY: Easy
+PROBLEM: Can you reach last index from first? nums[i] = max jump.
+INPUT: nums=[2,3,1,1,4]
+OUTPUT: true
+REASONING:
+Step 1: Track max reachable position.
+Step 2: i=0: max=2. i=1: max=max(2,1+3)=4. i=2: 2<=4 ok. i=3: 3<=4 ok. i=4: 4<=4 ok. Return true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+bool canJump(vector<int>& nums){
+    int maxReach=0;
+    for(int i=0;i<nums.size();i++){
+        if(i>maxReach) return false;
+        maxReach=max(maxReach,i+nums[i]);
+    }
+    return true;
+}
+int main(){
+    vector<int> nums={2,3,1,1,4};
+    cout<<canJump(nums)<<endl; // 1
+}
+```
+
+--- Problem 99 ---
+TITLE: Partition Labels (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Partition string so each letter appears in one part only. Maximize partitions.
+INPUT: s="ababcbacadefegdehijhklij"
+OUTPUT: [9,7,8]
+REASONING:
+Step 1: Record last occurrence of each char.
+Step 2: Greedily extend current partition to include last occurrence.
+Step 3: i=0('a'): end=max(8). i=1('b'): end=max(8,5)=8. ...reach i=8: i==end. Partition size=9.
+Step 4: Similar for next two partitions. Sizes=[9,7,8].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> partitionLabels(string s){
+    int last[26]={};
+    for(int i=0;i<s.size();i++) last[s[i]-'a']=i;
+    vector<int> res; int start=0, end=0;
+    for(int i=0;i<s.size();i++){
+        end=max(end,last[s[i]-'a']);
+        if(i==end){ res.push_back(end-start+1); start=i+1; }
+    }
+    return res;
+}
+int main(){
+    for(int x:partitionLabels("ababcbacadefegdehijhklij")) cout<<x<<" "; // 9 7 8
+}
+```
+
+--- Problem 100 ---
+TITLE: Non-overlapping Intervals (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Remove minimum intervals to make rest non-overlapping.
+INPUT: intervals=[[1,2],[2,3],[3,4],[1,3]]
+OUTPUT: 1
+REASONING:
+Step 1: Sort by end. [[1,2],[2,3],[1,3],[3,4]].
+Step 2: Keep [1,2]. Next [2,3]: 2>=2, keep. Next [1,3]: 1<2 (conflict), remove. Next [3,4]: 3>=3, keep.
+Step 3: Removed=1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int eraseOverlapIntervals(vector<vector<int>>& intervals){
+    sort(intervals.begin(),intervals.end(),[](auto& a,auto& b){return a[1]<b[1];});
+    int removed=0, end=intervals[0][1];
+    for(int i=1;i<intervals.size();i++){
+        if(intervals[i][0]<end) removed++;
+        else end=intervals[i][1];
+    }
+    return removed;
+}
+int main(){
+    vector<vector<int>> iv={{1,2},{2,3},{3,4},{1,3}};
+    cout<<eraseOverlapIntervals(iv)<<endl; // 1
+}
+```
+--- Problem 101 ---
+TITLE: Task Scheduler (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Tasks A-Z. Cooldown n between same tasks. Minimum intervals to finish all tasks.
+INPUT: tasks=['A','A','A','B','B','B'], n=2
+OUTPUT: 8
+REASONING:
+Step 1: Count task frequencies. A=3, B=3. Max freq=3.
+Step 2: Formula: max(n, (max_freq-1)*(n+1)+count_of_max_freq).
+Step 3: (3-1)*(2+1)+2=6+2=8.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int leastInterval(vector<char>& tasks, int n){
+    int freq[26]={};
+    for(char c:tasks) freq[c-'A']++;
+    int maxF=*max_element(freq,freq+26);
+    int countMax=count(freq,freq+26,maxF);
+    return max((int)tasks.size(),(maxF-1)*(n+1)+countMax);
+}
+int main(){
+    vector<char> t={'A','A','A','B','B','B'};
+    cout<<leastInterval(t,2)<<endl; // 8
+}
+```
+
+--- Problem 102 ---
+TITLE: Wiggle Subsequence (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Find longest wiggle subsequence (alternating up/down).
+INPUT: nums=[1,7,4,9,2,5]
+OUTPUT: 6
+REASONING:
+Step 1: All elements form a wiggle sequence. 1<7>4<9>2<5. Length=6.
+Step 2: Greedy: count peaks and valleys.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int wiggleMaxLength(vector<int>& nums){
+    int n=nums.size();
+    if(n<2) return n;
+    int up=1, down=1;
+    for(int i=1;i<n;i++){
+        if(nums[i]>nums[i-1]) up=down+1;
+        else if(nums[i]<nums[i-1]) down=up+1;
+    }
+    return max(up,down);
+}
+int main(){
+    vector<int> nums={1,7,4,9,2,5};
+    cout<<wiggleMaxLength(nums)<<endl; // 6
+}
+```
+
+--- Problem 103 ---
+TITLE: Maximum Sum of Non-Adjacent Elements
+DIFFICULTY: Easy
+PROBLEM: Find maximum sum where no two elements are adjacent.
+INPUT: nums=[2,7,9,3,1]
+OUTPUT: 12
+REASONING:
+Step 1: dp[i] = max sum up to index i. dp[i]=max(dp[i-1], dp[i-2]+nums[i]).
+Step 2: dp=[2,7,11,11,12]. Answer=12 (2+9+1).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int rob(vector<int>& nums){
+    int prev2=0, prev1=0;
+    for(int x:nums){ int cur=max(prev1,prev2+x); prev2=prev1; prev1=cur; }
+    return prev1;
+}
+int main(){
+    vector<int> nums={2,7,9,3,1};
+    cout<<rob(nums)<<endl; // 12
+}
+```
+
+--- Problem 104 ---
+TITLE: Reorganize String (Greedy)
+DIFFICULTY: Medium
+PROBLEM: Rearrange characters so no two adjacent are same. Return empty if impossible.
+INPUT: s="aab"
+OUTPUT: "aba"
+REASONING:
+Step 1: Count chars. a=2, b=1.
+Step 2: If max_freq > (n+1)/2: impossible.
+Step 3: Greedily place most frequent char. "aba" works.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+string reorganizeString(string s){
+    int freq[26]={};
+    for(char c:s) freq[c-'a']++;
+    int maxF=*max_element(freq,freq+26);
+    if(maxF>(s.size()+1)/2) return "";
+    priority_queue<pair<int,char>> pq;
+    for(int i=0;i<26;i++) if(freq[i]) pq.push({freq[i],'a'+i});
+    string res;
+    while(pq.size()>1){
+        auto [f1,c1]=pq.top();pq.pop();
+        auto [f2,c2]=pq.top();pq.pop();
+        res+=c1; res+=c2;
+        if(f1-1>0) pq.push({f1-1,c1});
+        if(f2-1>0) pq.push({f2-1,c2});
+    }
+    if(!pq.empty()) res+=pq.top().second;
+    return res;
+}
+int main(){cout<<reorganizeString("aab")<<endl;} // aba
+```
+
+--- Problem 105 ---
+TITLE: Minimum Cost to Connect Ropes
+DIFFICULTY: Medium
+PROBLEM: Connect all ropes into one. Cost = sum of lengths merged. Find min total cost.
+INPUT: ropes=[4,3,2,6]
+OUTPUT: 29
+REASONING:
+Step 1: Greedily merge two shortest ropes each time.
+Step 2: Min heap: [2,3,4,6]. Merge 2+3=5, cost=5. Heap: [4,5,6].
+Step 3: Merge 4+5=9, cost+=9=14. Heap: [6,9].
+Step 4: Merge 6+9=15, cost+=15=29. Answer=29.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int connectRopes(vector<int>& ropes){
+    priority_queue<int,vector<int>,greater<int>> pq(ropes.begin(),ropes.end());
+    int cost=0;
+    while(pq.size()>1){
+        int a=pq.top();pq.pop(); int b=pq.top();pq.pop();
+        cost+=a+b; pq.push(a+b);
+    }
+    return cost;
+}
+int main(){
+    vector<int> r={4,3,2,6};
+    cout<<connectRopes(r)<<endl; // 29
+}
+```
+
+================================================================================
+CATEGORY 9: DATA STRUCTURES (Problems 106–130)
+================================================================================
+
+--- Problem 106 ---
+TITLE: Segment Tree — Range Sum Query
+DIFFICULTY: Medium
+PROBLEM: Build segment tree for range sum queries and point updates.
+INPUT: nums=[1,3,5,7,9,11], query(1,3), update(1,10)
+OUTPUT: 15, then 22 after update
+REASONING:
+Step 1: Build tree. Root = total sum. Each node = sum of range.
+Step 2: Query [1,3]: sum of indices 1,2,3 = 3+5+7=15.
+Step 3: Update index 1 to 10: change 3->10. Query [1,3] = 10+5+7=22.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct SegTree {
+    int n; vector<int> tree;
+    SegTree(vector<int>& a): n(a.size()), tree(4*a.size(),0){ build(a,0,0,n-1); }
+    void build(vector<int>& a, int node, int lo, int hi){
+        if(lo==hi){ tree[node]=a[lo]; return; }
+        int mid=(lo+hi)/2;
+        build(a,2*node+1,lo,mid); build(a,2*node+2,mid+1,hi);
+        tree[node]=tree[2*node+1]+tree[2*node+2];
+    }
+    void update(int node, int lo, int hi, int idx, int val){
+        if(lo==hi){ tree[node]=val; return; }
+        int mid=(lo+hi)/2;
+        if(idx<=mid) update(2*node+1,lo,mid,idx,val);
+        else update(2*node+2,mid+1,hi,idx,val);
+        tree[node]=tree[2*node+1]+tree[2*node+2];
+    }
+    int query(int node, int lo, int hi, int l, int r){
+        if(r<lo||hi<l) return 0;
+        if(l<=lo&&hi<=r) return tree[node];
+        int mid=(lo+hi)/2;
+        return query(2*node+1,lo,mid,l,r)+query(2*node+2,mid+1,hi,l,r);
+    }
+    void update(int idx, int val){ update(0,0,n-1,idx,val); }
+    int query(int l, int r){ return query(0,0,n-1,l,r); }
+};
+int main(){
+    vector<int> nums={1,3,5,7,9,11};
+    SegTree st(nums);
+    cout<<st.query(1,3)<<endl; // 15
+    st.update(1,10);
+    cout<<st.query(1,3)<<endl; // 22
+}
+```
+
+--- Problem 107 ---
+TITLE: Segment Tree — Range Minimum Query
+DIFFICULTY: Medium
+PROBLEM: Range minimum query with point updates.
+INPUT: nums=[2,4,3,1,6,7,8,9], query(0,4)
+OUTPUT: 1
+REASONING:
+Step 1: Build min segment tree.
+Step 2: Query min of [0,4]: min(2,4,3,1,6)=1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct MinSegTree {
+    int n; vector<int> tree;
+    MinSegTree(vector<int>& a): n(a.size()), tree(4*n, INT_MAX){ build(a,0,0,n-1); }
+    void build(vector<int>& a, int node, int lo, int hi){
+        if(lo==hi){ tree[node]=a[lo]; return; }
+        int mid=(lo+hi)/2;
+        build(a,2*node+1,lo,mid); build(a,2*node+2,mid+1,hi);
+        tree[node]=min(tree[2*node+1],tree[2*node+2]);
+    }
+    int query(int node, int lo, int hi, int l, int r){
+        if(r<lo||hi<l) return INT_MAX;
+        if(l<=lo&&hi<=r) return tree[node];
+        int mid=(lo+hi)/2;
+        return min(query(2*node+1,lo,mid,l,r),query(2*node+2,mid+1,hi,l,r));
+    }
+    int query(int l, int r){ return query(0,0,n-1,l,r); }
+};
+int main(){
+    vector<int> nums={2,4,3,1,6,7,8,9};
+    MinSegTree st(nums);
+    cout<<st.query(0,4)<<endl; // 1
+}
+```
+
+--- Problem 108 ---
+TITLE: Lazy Propagation Segment Tree (Range Update)
+DIFFICULTY: Hard
+PROBLEM: Range add update and range sum query with lazy propagation.
+INPUT: nums=[1,2,3,4,5], range_add(1,3,10), query(0,4)
+OUTPUT: 45
+REASONING:
+Step 1: Initial sum=1+2+3+4+5=15.
+Step 2: Add 10 to indices 1-3: 1+12+13+14+5=45.
+Step 3: Query [0,4]=45.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct LazySegTree {
+    int n; vector<long long> tree, lazy;
+    LazySegTree(vector<int>& a): n(a.size()), tree(4*n,0), lazy(4*n,0){ build(a,0,0,n-1); }
+    void build(vector<int>& a, int node, int lo, int hi){
+        if(lo==hi){ tree[node]=a[lo]; return; }
+        int mid=(lo+hi)/2;
+        build(a,2*node+1,lo,mid); build(a,2*node+2,mid+1,hi);
+        tree[node]=tree[2*node+1]+tree[2*node+2];
+    }
+    void pushDown(int node, int lo, int hi){
+        if(lazy[node]){
+            int mid=(lo+hi)/2;
+            tree[2*node+1]+=lazy[node]*(mid-lo+1); lazy[2*node+1]+=lazy[node];
+            tree[2*node+2]+=lazy[node]*(hi-mid); lazy[2*node+2]+=lazy[node];
+            lazy[node]=0;
+        }
+    }
+    void update(int node, int lo, int hi, int l, int r, int val){
+        if(r<lo||hi<l) return;
+        if(l<=lo&&hi<=r){ tree[node]+=(long long)val*(hi-lo+1); lazy[node]+=val; return; }
+        pushDown(node,lo,hi); int mid=(lo+hi)/2;
+        update(2*node+1,lo,mid,l,r,val); update(2*node+2,mid+1,hi,l,r,val);
+        tree[node]=tree[2*node+1]+tree[2*node+2];
+    }
+    long long query(int node, int lo, int hi, int l, int r){
+        if(r<lo||hi<l) return 0;
+        if(l<=lo&&hi<=r) return tree[node];
+        pushDown(node,lo,hi); int mid=(lo+hi)/2;
+        return query(2*node+1,lo,mid,l,r)+query(2*node+2,mid+1,hi,l,r);
+    }
+    void update(int l, int r, int val){ update(0,0,n-1,l,r,val); }
+    long long query(int l, int r){ return query(0,0,n-1,l,r); }
+};
+int main(){
+    vector<int> nums={1,2,3,4,5};
+    LazySegTree st(nums);
+    st.update(1,3,10);
+    cout<<st.query(0,4)<<endl; // 45
+}
+```
+
+--- Problem 109 ---
+TITLE: Fenwick Tree (BIT) — Point Update Range Sum
+DIFFICULTY: Medium
+PROBLEM: Binary Indexed Tree for prefix sum queries and point updates.
+INPUT: nums=[1,3,5,7,9,11], query(0,3), update(2,6)
+OUTPUT: 16, then 17
+REASONING:
+Step 1: BIT supports O(log n) updates and prefix sum queries.
+Step 2: Sum [0,3] = 1+3+5+7 = 16.
+Step 3: Update index 2: 5 -> 6 (add 1). Sum [0,3] = 1+3+6+7 = 17.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct BIT {
+    int n; vector<int> tree;
+    BIT(int n): n(n), tree(n+1,0){}
+    void update(int i, int delta){ for(i++;i<=n;i+=i&(-i)) tree[i]+=delta; }
+    int query(int i){ int s=0; for(i++;i>0;i-=i&(-i)) s+=tree[i]; return s; }
+    int query(int l, int r){ return query(r)-(l>0?query(l-1):0); }
+};
+int main(){
+    vector<int> nums={1,3,5,7,9,11};
+    int n=nums.size(); BIT bit(n);
+    for(int i=0;i<n;i++) bit.update(i,nums[i]);
+    cout<<bit.query(0,3)<<endl; // 16
+    bit.update(2,1); // add 1 to index 2
+    cout<<bit.query(0,3)<<endl; // 17
+}
+```
+
+--- Problem 110 ---
+TITLE: Fenwick Tree — 2D Range Sum
+DIFFICULTY: Hard
+PROBLEM: 2D BIT for matrix sum queries.
+INPUT: matrix=[[3,0,1,4,2],[5,6,3,2,1],[1,2,0,1,5],[4,1,0,1,7],[1,0,3,0,5]], query(2,1,4,3)
+OUTPUT: 8
+REASONING:
+Step 1: Build 2D BIT. Query is sum of submatrix from (2,1) to (4,3).
+Step 2: Sum = matrix[2][1]+matrix[2][2]+matrix[2][3]+matrix[3][1]+...+matrix[4][3].
+Step 3: = 2+0+1+1+0+1+0+3+0=8.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct BIT2D {
+    int n,m; vector<vector<int>> tree;
+    BIT2D(int n,int m):n(n),m(m),tree(n+1,vector<int>(m+1,0)){}
+    void update(int r,int c,int val){
+        for(int i=r+1;i<=n;i+=i&(-i)) for(int j=c+1;j<=m;j+=j&(-j)) tree[i][j]+=val;
+    }
+    int query(int r,int c){
+        int s=0; for(int i=r+1;i>0;i-=i&(-i)) for(int j=c+1;j>0;j-=j&(-j)) s+=tree[i][j]; return s;
+    }
+    int query(int r1,int c1,int r2,int c2){
+        return query(r2,c2)-query(r1-1,c2)-query(r2,c1-1)+query(r1-1,c1-1);
+    }
+};
+int main(){
+    vector<vector<int>> mat={{3,0,1,4,2},{5,6,3,2,1},{1,2,0,1,5},{4,1,0,1,7},{1,0,3,0,5}};
+    int n=5,m=5; BIT2D bit(n,m);
+    for(int i=0;i<n;i++) for(int j=0;j<m;j++) bit.update(i,j,mat[i][j]);
+    cout<<bit.query(2,1,4,3)<<endl; // 8
+}
+```
+
+--- Problem 111 ---
+TITLE: Sliding Window Maximum (Monotonic Deque)
+DIFFICULTY: Hard
+PROBLEM: Return max of each sliding window of size k.
+INPUT: nums=[1,3,-1,-3,5,3,6,7], k=3
+OUTPUT: [3,3,5,5,6,7]
+REASONING:
+Step 1: Use deque to maintain indices of potential maximums.
+Step 2: Window [1,3,-1]: max=3. Window [3,-1,-3]: max=3. Window [-1,-3,5]: max=5.
+Step 3: Window [-3,5,3]: max=5. Window [5,3,6]: max=6. Window [3,6,7]: max=7.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> maxSlidingWindow(vector<int>& nums, int k){
+    deque<int> dq; vector<int> res;
+    for(int i=0;i<nums.size();i++){
+        while(!dq.empty()&&dq.front()<i-k+1) dq.pop_front();
+        while(!dq.empty()&&nums[dq.back()]<nums[i]) dq.pop_back();
+        dq.push_back(i);
+        if(i>=k-1) res.push_back(nums[dq.front()]);
+    }
+    return res;
+}
+int main(){
+    vector<int> nums={1,3,-1,-3,5,3,6,7};
+    for(int x:maxSlidingWindow(nums,3)) cout<<x<<" "; // 3 3 5 5 6 7
+}
+```
+
+--- Problem 112 ---
+TITLE: Sliding Window Minimum
+DIFFICULTY: Medium
+PROBLEM: Return minimum of each sliding window of size k.
+INPUT: nums=[1,3,-1,-3,5,3,6,7], k=3
+OUTPUT: [-1,-3,-3,-3,3,3]
+REASONING:
+Step 1: Same as sliding window maximum but maintain increasing deque.
+Step 2: Window [1,3,-1]: min=-1. Window [3,-1,-3]: min=-3. Continue.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> minSlidingWindow(vector<int>& nums, int k){
+    deque<int> dq; vector<int> res;
+    for(int i=0;i<nums.size();i++){
+        while(!dq.empty()&&dq.front()<i-k+1) dq.pop_front();
+        while(!dq.empty()&&nums[dq.back()]>nums[i]) dq.pop_back();
+        dq.push_back(i);
+        if(i>=k-1) res.push_back(nums[dq.front()]);
+    }
+    return res;
+}
+int main(){
+    vector<int> nums={1,3,-1,-3,5,3,6,7};
+    for(int x:minSlidingWindow(nums,3)) cout<<x<<" "; // -1 -3 -3 -3 3 3
+}
+```
+
+--- Problem 113 ---
+TITLE: LRU Cache
+DIFFICULTY: Medium
+PROBLEM: Implement LRU Cache with O(1) get and put.
+INPUT: capacity=2, ops: put(1,1),put(2,2),get(1),put(3,3),get(2)
+OUTPUT: 1, -1
+REASONING:
+Step 1: Use doubly linked list + hashmap.
+Step 2: put(1,1): cache={1:1}. put(2,2): cache={1:1,2:2}. get(1)=1, move to front.
+Step 3: put(3,3): evict LRU (2). cache={1:1,3:3}. get(2)=-1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+class LRUCache {
+    int cap;
+    list<pair<int,int>> lst;
+    unordered_map<int,list<pair<int,int>>::iterator> mp;
+public:
+    LRUCache(int capacity):cap(capacity){}
+    int get(int key){
+        if(!mp.count(key)) return -1;
+        lst.splice(lst.begin(),lst,mp[key]);
+        return mp[key]->second;
+    }
+    void put(int key, int value){
+        if(mp.count(key)){ mp[key]->second=value; lst.splice(lst.begin(),lst,mp[key]); return; }
+        if(lst.size()==cap){ mp.erase(lst.back().first); lst.pop_back(); }
+        lst.push_front({key,value}); mp[key]=lst.begin();
+    }
+};
+int main(){
+    LRUCache lru(2);
+    lru.put(1,1); lru.put(2,2);
+    cout<<lru.get(1)<<endl; // 1
+    lru.put(3,3);
+    cout<<lru.get(2)<<endl; // -1
+}
+```
+
+--- Problem 114 ---
+TITLE: Min Stack
+DIFFICULTY: Easy
+PROBLEM: Stack supporting push, pop, top, and getMin in O(1).
+INPUT: push(5),push(3),push(7),push(2),getMin(),pop(),getMin()
+OUTPUT: 2, 3
+REASONING:
+Step 1: Maintain auxiliary min stack.
+Step 2: Push 5: stack=[5], min=[5]. Push 3: min=[5,3]. Push 7: min=[5,3,3]. Push 2: min=[5,3,3,2].
+Step 3: getMin()=2. pop(): stack=[5,3,7], min=[5,3,3]. getMin()=3.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+class MinStack {
+    stack<int> s, minS;
+public:
+    void push(int x){ s.push(x); minS.push(minS.empty()?x:min(x,minS.top())); }
+    void pop(){ s.pop(); minS.pop(); }
+    int top(){ return s.top(); }
+    int getMin(){ return minS.top(); }
+};
+int main(){
+    MinStack ms;
+    ms.push(5);ms.push(3);ms.push(7);ms.push(2);
+    cout<<ms.getMin()<<endl; // 2
+    ms.pop();
+    cout<<ms.getMin()<<endl; // 3
+}
+```
+
+--- Problem 115 ---
+TITLE: Implement Queue using Stacks
+DIFFICULTY: Easy
+PROBLEM: Implement FIFO queue using two stacks.
+INPUT: push(1),push(2),peek(),pop(),empty()
+OUTPUT: 1, 1, false
+REASONING:
+Step 1: Push to stack1. For pop/peek, transfer all to stack2 (reverses order).
+Step 2: push(1): s1=[1]. push(2): s1=[1,2]. peek(): transfer to s2=[2,1]. peek=1.
+Step 3: pop(): return s2.top()=1. empty(): both stacks non-empty=false.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+class MyQueue {
+    stack<int> s1, s2;
+    void transfer(){ while(!s1.empty()){s2.push(s1.top());s1.pop();} }
+public:
+    void push(int x){ s1.push(x); }
+    int pop(){ if(s2.empty()) transfer(); int v=s2.top();s2.pop();return v; }
+    int peek(){ if(s2.empty()) transfer(); return s2.top(); }
+    bool empty(){ return s1.empty()&&s2.empty(); }
+};
+int main(){
+    MyQueue q;
+    q.push(1);q.push(2);
+    cout<<q.peek()<<endl; // 1
+    cout<<q.pop()<<endl;  // 1
+    cout<<q.empty()<<endl; // 0
+}
+```
+
+--- Problem 116 ---
+TITLE: Trie — Insert and Search
+DIFFICULTY: Medium
+PROBLEM: Implement Trie with insert, search, and startsWith.
+INPUT: insert("apple"), search("apple"), search("app"), startsWith("app")
+OUTPUT: true, false, true
+REASONING:
+Step 1: Trie nodes have 26 children and isEnd flag.
+Step 2: Insert "apple": create nodes a->p->p->l->e. Mark e.isEnd=true.
+Step 3: search("apple"): traverse path, find isEnd=true. Return true.
+Step 4: search("app"): traverse, find p not isEnd. Return false.
+Step 5: startsWith("app"): traverse, all nodes exist. Return true.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct Trie {
+    Trie* children[26]={};
+    bool isEnd=false;
+    void insert(string& s){ Trie* cur=this; for(char c:s){ if(!cur->children[c-'a']) cur->children[c-'a']=new Trie(); cur=cur->children[c-'a']; } cur->isEnd=true; }
+    bool search(string& s){ Trie* cur=this; for(char c:s){ if(!cur->children[c-'a']) return false; cur=cur->children[c-'a']; } return cur->isEnd; }
+    bool startsWith(string& p){ Trie* cur=this; for(char c:p){ if(!cur->children[c-'a']) return false; cur=cur->children[c-'a']; } return true; }
+};
+int main(){
+    Trie t; string s="apple",a="app";
+    t.insert(s);
+    cout<<t.search(s)<<"\n"; // 1
+    cout<<t.search(a)<<"\n"; // 0
+    cout<<t.startsWith(a)<<"\n"; // 1
+}
+```
+
+--- Problem 117 ---
+TITLE: Design HashMap
+DIFFICULTY: Easy
+PROBLEM: Implement hash map with put, get, remove.
+INPUT: put(1,1),put(2,2),get(1),get(3),put(2,1),get(2),remove(2),get(2)
+OUTPUT: 1,-1,1,-1
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+class MyHashMap {
+    static const int SIZE=1024;
+    vector<list<pair<int,int>>> table;
+public:
+    MyHashMap():table(SIZE){}
+    int hash(int key){ return key%SIZE; }
+    void put(int key, int val){
+        auto& lst=table[hash(key)];
+        for(auto& p:lst) if(p.first==key){ p.second=val; return; }
+        lst.push_back({key,val});
+    }
+    int get(int key){
+        for(auto& p:table[hash(key)]) if(p.first==key) return p.second;
+        return -1;
+    }
+    void remove(int key){
+        auto& lst=table[hash(key)];
+        lst.remove_if([key](auto& p){return p.first==key;});
+    }
+};
+int main(){
+    MyHashMap m;
+    m.put(1,1);m.put(2,2);
+    cout<<m.get(1)<<"\n"; // 1
+    cout<<m.get(3)<<"\n"; // -1
+    m.put(2,1); cout<<m.get(2)<<"\n"; // 1
+    m.remove(2); cout<<m.get(2)<<"\n"; // -1
+}
+```
+
+--- Problem 118 ---
+TITLE: Balanced Binary Search Tree — Verify
+DIFFICULTY: Easy
+PROBLEM: Check if a binary tree is height-balanced (height diff <= 1 for every node).
+INPUT: root=[3,9,20,null,null,15,7]
+OUTPUT: true
+REASONING:
+Step 1: DFS to compute height. If any subtree has height diff > 1, return -1 (unbalanced).
+Step 2: Height of 9=1, 15=1, 7=1. Height of 20=2. Height of 3=3. All balanced.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct TreeNode { int val; TreeNode *left,*right; TreeNode(int v):val(v),left(nullptr),right(nullptr){} };
+int height(TreeNode* root){
+    if(!root) return 0;
+    int l=height(root->left); if(l==-1) return -1;
+    int r=height(root->right); if(r==-1) return -1;
+    if(abs(l-r)>1) return -1;
+    return max(l,r)+1;
+}
+bool isBalanced(TreeNode* root){ return height(root)!=-1; }
+```
+
+--- Problem 119 ---
+TITLE: Monotonic Stack — Next Greater Element
+DIFFICULTY: Easy
+PROBLEM: For each element, find the next greater element to its right.
+INPUT: nums=[2,1,2,4,3]
+OUTPUT: [4,2,4,-1,-1]
+REASONING:
+Step 1: Use stack. Maintain decreasing stack of indices.
+Step 2: i=0(2): stack=[0]. i=1(1): 1<2, stack=[0,1]. i=2(2): 2>=1, pop 1, nge[1]=2. 2>=2, pop 0, nge[0]=2. stack=[2].
+Step 3: i=3(4): 4>=2, pop 2, nge[2]=4. stack=[3]. i=4(3): 3<4, stack=[3,4].
+Step 4: Remaining stack: nge[3]=-1, nge[4]=-1.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> nextGreaterElement(vector<int>& nums){
+    int n=nums.size();
+    vector<int> nge(n,-1); stack<int> s;
+    for(int i=0;i<n;i++){
+        while(!s.empty()&&nums[s.top()]<nums[i]){ nge[s.top()]=nums[i]; s.pop(); }
+        s.push(i);
+    }
+    return nge;
+}
+int main(){
+    vector<int> nums={2,1,2,4,3};
+    for(int x:nextGreaterElement(nums)) cout<<x<<" "; // 4 2 4 -1 -1
+}
+```
+
+--- Problem 120 ---
+TITLE: Next Greater Element II (Circular)
+DIFFICULTY: Medium
+PROBLEM: Next greater element in circular array.
+INPUT: nums=[1,2,1]
+OUTPUT: [2,-1,2]
+REASONING:
+Step 1: Process array twice (simulate circular).
+Step 2: Second pass finds NGE for elements that wrapped around.
+Step 3: For index 2 (value 1): NGE is 2 (from index 1).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> nextGreaterElements(vector<int>& nums){
+    int n=nums.size();
+    vector<int> res(n,-1); stack<int> s;
+    for(int i=0;i<2*n;i++){
+        while(!s.empty()&&nums[s.top()]<nums[i%n]){ res[s.top()]=nums[i%n]; s.pop(); }
+        if(i<n) s.push(i);
+    }
+    return res;
+}
+int main(){
+    vector<int> nums={1,2,1};
+    for(int x:nextGreaterElements(nums)) cout<<x<<" "; // 2 -1 2
+}
+```
+
+--- Problem 121 ---
+TITLE: Daily Temperatures (Monotonic Stack)
+DIFFICULTY: Medium
+PROBLEM: For each day, how many days until a warmer temperature?
+INPUT: temperatures=[73,74,75,71,69,72,76,73]
+OUTPUT: [1,1,4,2,1,1,0,0]
+REASONING:
+Step 1: Monotonic decreasing stack of indices.
+Step 2: i=0(73): stack=[0]. i=1(74): 74>73, pop 0, res[0]=1-0=1. Stack=[1].
+Step 3: i=2(75): 75>74, pop 1, res[1]=2-1=1. Stack=[2].
+Step 4: i=3(71): 71<75. Stack=[2,3]. ...Continue to get all results.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> dailyTemperatures(vector<int>& t){
+    int n=t.size(); vector<int> res(n,0); stack<int> s;
+    for(int i=0;i<n;i++){
+        while(!s.empty()&&t[s.top()]<t[i]){ res[s.top()]=i-s.top(); s.pop(); }
+        s.push(i);
+    }
+    return res;
+}
+int main(){
+    vector<int> t={73,74,75,71,69,72,76,73};
+    for(int x:dailyTemperatures(t)) cout<<x<<" "; // 1 1 4 2 1 1 0 0
+}
+```
+
+--- Problem 122 ---
+TITLE: Largest Rectangle (Histogram) — Monotonic Stack
+DIFFICULTY: Hard
+PROBLEM: (Repeated from P84 but with stack explanation)
+INPUT: heights=[2,1,5,6,2,3]
+OUTPUT: 10
+REASONING: (Refer to Problem 84 detailed steps above)
+CODE: (Refer to Problem 84)
+
+--- Problem 123 ---
+TITLE: Merge K Sorted Lists (Priority Queue)
+DIFFICULTY: Hard
+PROBLEM: Merge k sorted linked lists into one sorted list.
+INPUT: lists=[[1,4,5],[1,3,4],[2,6]]
+OUTPUT: [1,1,2,3,4,4,5,6]
+REASONING:
+Step 1: Use min-heap of (value, list index).
+Step 2: Initialize with heads. Extract min, add to result, push next element.
+Step 3: Repeat until heap empty.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct ListNode { int val; ListNode* next; ListNode(int v):val(v),next(nullptr){} };
+ListNode* mergeKLists(vector<ListNode*>& lists){
+    auto cmp=[](ListNode* a,ListNode* b){return a->val>b->val;};
+    priority_queue<ListNode*,vector<ListNode*>,decltype(cmp)> pq(cmp);
+    for(auto l:lists) if(l) pq.push(l);
+    ListNode dummy(0); ListNode* cur=&dummy;
+    while(!pq.empty()){
+        cur->next=pq.top(); pq.pop(); cur=cur->next;
+        if(cur->next) pq.push(cur->next);
+    }
+    return dummy.next;
+}
+```
+
+--- Problem 124 ---
+TITLE: Top K Frequent Elements
+DIFFICULTY: Medium
+PROBLEM: Find k most frequent elements.
+INPUT: nums=[1,1,1,2,2,3], k=2
+OUTPUT: [1,2]
+REASONING:
+Step 1: Count frequencies. freq={1:3,2:2,3:1}.
+Step 2: Use min-heap of size k. For each element, if heap.size()==k and freq<min, skip.
+Step 3: Heap has elements 1(freq=3) and 2(freq=2). Return [1,2].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> topKFrequent(vector<int>& nums, int k){
+    unordered_map<int,int> freq;
+    for(int x:nums) freq[x]++;
+    priority_queue<pair<int,int>,vector<pair<int,int>>,greater<>> pq;
+    for(auto& [x,f]:freq){
+        pq.push({f,x});
+        if(pq.size()>k) pq.pop();
+    }
+    vector<int> res;
+    while(!pq.empty()){ res.push_back(pq.top().second); pq.pop(); }
+    return res;
+}
+int main(){
+    vector<int> nums={1,1,1,2,2,3};
+    for(int x:topKFrequent(nums,2)) cout<<x<<" "; // 2 1
+}
+```
+
+--- Problem 125 ---
+TITLE: Find Kth Largest (Quick Select)
+DIFFICULTY: Medium
+PROBLEM: Find kth largest element in unsorted array.
+INPUT: nums=[3,2,1,5,6,4], k=2
+OUTPUT: 5
+REASONING:
+Step 1: Quick select with partition. Target index = n-k from smallest.
+Step 2: Partition around pivot. Recurse on appropriate side.
+Step 3: O(n) average, O(n²) worst. k=2nd largest = 5.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int partition(vector<int>& nums, int lo, int hi){
+    int pivot=nums[hi], i=lo;
+    for(int j=lo;j<hi;j++) if(nums[j]<=pivot) swap(nums[i++],nums[j]);
+    swap(nums[i],nums[hi]); return i;
+}
+int findKthLargest(vector<int>& nums, int k){
+    int n=nums.size(), target=n-k, lo=0, hi=n-1;
+    while(lo<hi){
+        int p=partition(nums,lo,hi);
+        if(p==target) return nums[p];
+        else if(p<target) lo=p+1;
+        else hi=p-1;
+    }
+    return nums[lo];
+}
+int main(){
+    vector<int> nums={3,2,1,5,6,4};
+    cout<<findKthLargest(nums,2)<<endl; // 5
+}
+```
+
+--- Problem 126 ---
+TITLE: Sparse Table (Static Range Minimum Query)
+DIFFICULTY: Medium
+PROBLEM: Preprocess array for O(1) RMQ after O(n log n) preprocessing.
+INPUT: nums=[2,4,3,1,6,7,8,9], query(0,6)
+OUTPUT: 1
+REASONING:
+Step 1: sparse[i][j] = min of 2^j elements starting at i.
+Step 2: For query(l,r): k=log2(r-l+1). Answer=min(sparse[l][k], sparse[r-2^k+1][k]).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct SparseTable {
+    vector<vector<int>> table;
+    vector<int> log2_;
+    SparseTable(vector<int>& a){
+        int n=a.size(), LOG=__lg(n)+1;
+        table.assign(n,vector<int>(LOG));
+        log2_.resize(n+1);
+        for(int i=2;i<=n;i++) log2_[i]=log2_[i/2]+1;
+        for(int i=0;i<n;i++) table[i][0]=a[i];
+        for(int j=1;j<LOG;j++)
+            for(int i=0;i+(1<<j)-1<n;i++)
+                table[i][j]=min(table[i][j-1],table[i+(1<<(j-1))][j-1]);
+    }
+    int query(int l, int r){
+        int k=log2_[r-l+1];
+        return min(table[l][k],table[r-(1<<k)+1][k]);
+    }
+};
+int main(){
+    vector<int> a={2,4,3,1,6,7,8,9};
+    SparseTable st(a);
+    cout<<st.query(0,6)<<endl; // 1
+}
+```
+
+--- Problem 127 ---
+TITLE: Disjoint Set with Rollback (DSU with Undo)
+DIFFICULTY: Hard
+PROBLEM: DSU supporting undo operation for offline dynamic connectivity.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct DSU {
+    vector<int> parent, rank_;
+    vector<pair<int*,int>> history;
+    DSU(int n): parent(n), rank_(n,0){ iota(parent.begin(),parent.end(),0); }
+    int find(int x){ while(parent[x]!=x) x=parent[x]; return x; } // no path compression
+    void unite(int x, int y){
+        x=find(x); y=find(y); if(x==y) return;
+        if(rank_[x]<rank_[y]) swap(x,y);
+        history.push_back({&parent[y],parent[y]});
+        history.push_back({&rank_[x],rank_[x]});
+        parent[y]=x;
+        if(rank_[x]==rank_[y]) rank_[x]++;
+    }
+    int save(){ return history.size(); }
+    void rollback(int checkpoint){
+        while(history.size()>checkpoint){
+            *history.back().first=history.back().second; history.pop_back();
+        }
+    }
+};
+int main(){
+    DSU dsu(5);
+    int cp=dsu.save();
+    dsu.unite(0,1); dsu.unite(1,2);
+    cout<<(dsu.find(0)==dsu.find(2))<<"\n"; // 1
+    dsu.rollback(cp);
+    cout<<(dsu.find(0)==dsu.find(2))<<"\n"; // 0
+}
+```
+
+--- Problem 128 ---
+TITLE: Ordered Set Operations (using policy-based tree)
+DIFFICULTY: Medium
+PROBLEM: Find kth smallest and count elements less than x.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace std;
+using namespace __gnu_pbds;
+typedef tree<int,null_type,less<int>,rb_tree_tag,tree_order_statistics_node_update> ordered_set;
+int main(){
+    ordered_set os;
+    os.insert(5); os.insert(3); os.insert(7); os.insert(1);
+    cout<<*os.find_by_order(1)<<"\n"; // 3 (0-indexed 2nd smallest)
+    cout<<os.order_of_key(5)<<"\n";   // 2 (elements < 5)
+}
+```
+
+--- Problem 129 ---
+TITLE: Treap (Randomized BST)
+DIFFICULTY: Hard
+PROBLEM: Implement treap supporting split and merge.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct Node {
+    int key, priority, sz;
+    Node *l, *r;
+    Node(int k): key(k), priority(rand()), sz(1), l(nullptr), r(nullptr){}
+};
+int sz(Node* t){ return t?t->sz:0; }
+void upd(Node* t){ if(t) t->sz=1+sz(t->l)+sz(t->r); }
+pair<Node*,Node*> split(Node* t, int k){ // split: left has keys <= k
+    if(!t) return {nullptr,nullptr};
+    if(t->key<=k){ auto [l,r]=split(t->r,k); t->r=l; upd(t); return {t,r}; }
+    else { auto [l,r]=split(t->l,k); t->l=r; upd(t); return {l,t}; }
+}
+Node* merge(Node* l, Node* r){
+    if(!l) return r; if(!r) return l;
+    if(l->priority>r->priority){ l->r=merge(l->r,r); upd(l); return l; }
+    else { r->l=merge(l,r->l); upd(r); return r; }
+}
+```
+
+--- Problem 130 ---
+TITLE: Persistent Segment Tree
+DIFFICULTY: Hard
+PROBLEM: Version-controlled segment tree for historical range queries.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+struct Node { int val, l, r; } tree[20000000];
+int tot=0;
+int build(int lo, int hi){
+    int cur=++tot; tree[cur].val=0;
+    if(lo==hi){ return cur; }
+    int mid=(lo+hi)/2;
+    tree[cur].l=build(lo,mid); tree[cur].r=build(mid+1,hi);
+    return cur;
+}
+int update(int prev, int lo, int hi, int pos, int val){
+    int cur=++tot; tree[cur]=tree[prev];
+    if(lo==hi){ tree[cur].val+=val; return cur; }
+    int mid=(lo+hi)/2;
+    if(pos<=mid) tree[cur].l=update(tree[prev].l,lo,mid,pos,val);
+    else tree[cur].r=update(tree[prev].r,mid+1,hi,pos,val);
+    tree[cur].val=tree[tree[cur].l].val+tree[tree[cur].r].val;
+    return cur;
+}
+```
+
+================================================================================
+CATEGORY 10: MISCELLANEOUS (Problems 131–200)
+================================================================================
+
+--- Problem 131 ---
+TITLE: Kadane's Algorithm — Maximum Subarray Sum
+DIFFICULTY: Easy
+PROBLEM: Find maximum sum contiguous subarray.
+INPUT: nums=[-2,1,-3,4,-1,2,1,-5,4]
+OUTPUT: 6
+REASONING:
+Step 1: max_current=max_global=-2.
+Step 2: i=1(1): max_current=max(1,-2+1)=1. max_global=1.
+Step 3: i=2(-3): max_current=max(-3,1-3)=-2. max_global=1.
+Step 4: i=3(4): max_current=max(4,-2+4)=4. max_global=4.
+Step 5: i=4(-1): max_current=3. i=5(2): max_current=5. max_global=5. i=6(1): max_current=6. max_global=6.
+Step 6: i=7(-5): max_current=1. i=8(4): max_current=5. max_global=6.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int maxSubArray(vector<int>& nums){
+    int cur=nums[0], best=nums[0];
+    for(int i=1;i<nums.size();i++){
+        cur=max(nums[i],cur+nums[i]);
+        best=max(best,cur);
+    }
+    return best;
+}
+int main(){
+    vector<int> nums={-2,1,-3,4,-1,2,1,-5,4};
+    cout<<maxSubArray(nums)<<endl; // 6
+}
+```
+
+--- Problem 132 ---
+TITLE: Two Sum
+DIFFICULTY: Easy
+PROBLEM: Find two indices that sum to target.
+INPUT: nums=[2,7,11,15], target=9
+OUTPUT: [0,1]
+REASONING:
+Step 1: Use hash map. For each num, check if complement (target-num) exists.
+Step 2: num=2: complement=7, not in map. Store {2:0}.
+Step 3: num=7: complement=2, found at index 0. Return [0,1].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> twoSum(vector<int>& nums, int target){
+    unordered_map<int,int> mp;
+    for(int i=0;i<nums.size();i++){
+        int comp=target-nums[i];
+        if(mp.count(comp)) return {mp[comp],i};
+        mp[nums[i]]=i;
+    }
+    return {};
+}
+int main(){
+    vector<int> nums={2,7,11,15};
+    auto r=twoSum(nums,9);
+    cout<<r[0]<<" "<<r[1]<<endl; // 0 1
+}
+```
+
+--- Problem 133 ---
+TITLE: Three Sum
+DIFFICULTY: Medium
+PROBLEM: Find all unique triplets that sum to zero.
+INPUT: nums=[-1,0,1,2,-1,-4]
+OUTPUT: [[-1,-1,2],[-1,0,1]]
+REASONING:
+Step 1: Sort: [-4,-1,-1,0,1,2].
+Step 2: Fix i=-4. Two pointers lo,hi. No zero sum found.
+Step 3: Fix i=-1(idx1). lo=-1(idx2),hi=2. -1+-1+2=0. Add. lo->, hi<-.
+Step 4: lo=0,hi=1. -1+0+1=0. Add. lo->.
+Step 5: Fix i=-1(idx2 dup): skip. Fix i=0,1,2: no triplets (too big).
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<vector<int>> threeSum(vector<int>& nums){
+    sort(nums.begin(),nums.end()); vector<vector<int>> res;
+    for(int i=0;i<nums.size()-2;i++){
+        if(i>0&&nums[i]==nums[i-1]) continue;
+        int lo=i+1, hi=nums.size()-1;
+        while(lo<hi){
+            int s=nums[i]+nums[lo]+nums[hi];
+            if(s==0){ res.push_back({nums[i],nums[lo],nums[hi]}); while(lo<hi&&nums[lo]==nums[lo+1]) lo++; while(lo<hi&&nums[hi]==nums[hi-1]) hi--; lo++;hi--; }
+            else if(s<0) lo++; else hi--;
+        }
+    }
+    return res;
+}
+int main(){
+    vector<int> nums={-1,0,1,2,-1,-4};
+    for(auto& v:threeSum(nums)){ for(int x:v) cout<<x<<" "; cout<<"\n"; }
+}
+```
+
+--- Problem 134 ---
+TITLE: Four Sum
+DIFFICULTY: Medium
+PROBLEM: Find all unique quadruplets summing to target.
+INPUT: nums=[1,0,-1,0,-2,2], target=0
+OUTPUT: [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
+REASONING:
+Step 1: Sort. Fix i and j. Use two pointers for k,l.
+Step 2: This extends 3Sum by one more level.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<vector<int>> fourSum(vector<int>& nums, int target){
+    sort(nums.begin(),nums.end()); int n=nums.size();
+    vector<vector<int>> res;
+    for(int i=0;i<n-3;i++){
+        if(i>0&&nums[i]==nums[i-1]) continue;
+        for(int j=i+1;j<n-2;j++){
+            if(j>i+1&&nums[j]==nums[j-1]) continue;
+            int lo=j+1, hi=n-1;
+            while(lo<hi){
+                long long s=(long long)nums[i]+nums[j]+nums[lo]+nums[hi];
+                if(s==target){ res.push_back({nums[i],nums[j],nums[lo],nums[hi]}); while(lo<hi&&nums[lo]==nums[lo+1]) lo++; while(lo<hi&&nums[hi]==nums[hi-1]) hi--; lo++;hi--; }
+                else if(s<target) lo++; else hi--;
+            }
+        }
+    }
+    return res;
+}
+int main(){
+    vector<int> nums={1,0,-1,0,-2,2};
+    for(auto& v:fourSum(nums,0)){ for(int x:v) cout<<x<<" "; cout<<"\n"; }
+}
+```
+
+--- Problem 135 ---
+TITLE: Fast Exponentiation (Binary Exponentiation)
+DIFFICULTY: Easy
+PROBLEM: Compute x^n in O(log n).
+INPUT: x=2, n=10
+OUTPUT: 1024
+REASONING:
+Step 1: 2^10 = 2^8 * 2^2 = 256 * 4 = 1024.
+Step 2: Binary: 10 = 1010. Squaring method: 2^1=2, 2^2=4, 2^4=16, 2^8=256. Multiply for bits set: 2^8 * 2^2 = 1024.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+double fastPow(double x, long long n){
+    if(n<0){ x=1/x; n=-n; }
+    double res=1;
+    while(n>0){
+        if(n&1) res*=x;
+        x*=x; n>>=1;
+    }
+    return res;
+}
+long long fastPowMod(long long base, long long exp, long long mod){
+    long long res=1; base%=mod;
+    while(exp>0){
+        if(exp&1) res=res*base%mod;
+        base=base*base%mod; exp>>=1;
+    }
+    return res;
+}
+int main(){
+    cout<<fastPow(2,10)<<endl; // 1024
+    cout<<fastPowMod(2,10,1000000007)<<endl; // 1024
+}
+```
+
+--- Problem 136 ---
+TITLE: Sieve of Eratosthenes
+DIFFICULTY: Easy
+PROBLEM: Find all primes up to n.
+INPUT: n=30
+OUTPUT: [2,3,5,7,11,13,17,19,23,29]
+REASONING:
+Step 1: Mark all as prime. Start from 2.
+Step 2: 2 is prime. Mark multiples: 4,6,8...30.
+Step 3: 3 is prime. Mark: 9,15,21,27.
+Step 4: 5 is prime (4 was crossed). Mark: 25.
+Step 5: Continue. Remaining marked = primes.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> sieve(int n){
+    vector<bool> is_prime(n+1,true);
+    is_prime[0]=is_prime[1]=false;
+    for(int i=2;i*i<=n;i++) if(is_prime[i]) for(int j=i*i;j<=n;j+=i) is_prime[j]=false;
+    vector<int> primes;
+    for(int i=2;i<=n;i++) if(is_prime[i]) primes.push_back(i);
+    return primes;
+}
+int main(){
+    for(int p:sieve(30)) cout<<p<<" "; // 2 3 5 7 11 13 17 19 23 29
+}
+```
+
+--- Problem 137 ---
+TITLE: Segmented Sieve
+DIFFICULTY: Medium
+PROBLEM: Find all primes in range [L, R] efficiently.
+INPUT: L=10, R=50
+OUTPUT: [11,13,17,19,23,29,31,37,41,43,47]
+REASONING:
+Step 1: Find all primes up to sqrt(R) using regular sieve.
+Step 2: Use these primes to sieve the range [L,R].
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+vector<int> segmentedSieve(int L, int R){
+    int limit=sqrt(R)+1;
+    vector<bool> sieve_small(limit+1,true);
+    sieve_small[0]=sieve_small[1]=false;
+    for(int i=2;i*i<=limit;i++) if(sieve_small[i]) for(int j=i*i;j<=limit;j+=i) sieve_small[j]=false;
+    vector<bool> sieve_range(R-L+1,true);
+    if(L==1) sieve_range[0]=false;
+    for(int p=2;p<=limit;p++){
+        if(!sieve_small[p]) continue;
+        int start=max((long long)p*p,(long long)((L+p-1)/p)*p);
+        for(long long j=start;j<=R;j+=p) sieve_range[j-L]=false;
+    }
+    vector<int> primes;
+    for(int i=0;i<=R-L;i++) if(sieve_range[i]) primes.push_back(L+i);
+    return primes;
+}
+int main(){
+    for(int p:segmentedSieve(10,50)) cout<<p<<" ";
+}
+```
+
+--- Problem 138 ---
+TITLE: GCD and LCM
+DIFFICULTY: Easy
+PROBLEM: Compute GCD and LCM of two numbers.
+INPUT: a=12, b=18
+OUTPUT: GCD=6, LCM=36
+REASONING:
+Step 1: Euclidean: gcd(12,18)=gcd(18%12,12)=gcd(6,12)=gcd(0,6)=6.
+Step 2: LCM = a*b/gcd = 12*18/6 = 36.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int gcd(int a, int b){ return b==0?a:gcd(b,a%b); }
+int lcm(int a, int b){ return a/gcd(a,b)*b; }
+int main(){
+    cout<<"GCD="<<gcd(12,18)<<"\n"; // 6
+    cout<<"LCM="<<lcm(12,18)<<"\n"; // 36
+}
+```
+
+--- Problem 139 ---
+TITLE: Extended Euclidean Algorithm
+DIFFICULTY: Medium
+PROBLEM: Find x,y such that ax + by = gcd(a,b).
+INPUT: a=35, b=15
+OUTPUT: gcd=5, x=1, y=-2 (35*1 + 15*(-2) = 5)
+REASONING:
+Step 1: Extended GCD recursion.
+Step 2: gcd(35,15): gcd(15,5): gcd(5,0)=5. Back-substitute to find x,y.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+int extGcd(int a, int b, int& x, int& y){
+    if(b==0){ x=1; y=0; return a; }
+    int x1,y1;
+    int g=extGcd(b,a%b,x1,y1);
+    x=y1; y=x1-(a/b)*y1;
+    return g;
+}
+int main(){
+    int x,y;
+    int g=extGcd(35,15,x,y);
+    cout<<"gcd="<<g<<" x="<<x<<" y="<<y<<"\n"; // gcd=5 x=1 y=-2
+}
+```
+
+--- Problem 140 ---
+TITLE: Modular Inverse
+DIFFICULTY: Medium
+PROBLEM: Find modular inverse of a mod m (when m is prime, use Fermat's little theorem).
+INPUT: a=3, m=7
+OUTPUT: 5 (3*5=15≡1 mod 7)
+REASONING:
+Step 1: By Fermat's: a^(m-1) ≡ 1 mod m. So a^(-1) ≡ a^(m-2) mod m.
+Step 2: 3^5 mod 7 = 243 mod 7 = 5. Check: 3*5=15=2*7+1 ≡ 1. Correct.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+long long power(long long a, long long b, long long mod){
+    long long res=1; a%=mod;
+    while(b>0){ if(b&1) res=res*a%mod; a=a*a%mod; b>>=1; }
+    return res;
+}
+long long modInverse(long long a, long long m){ return power(a,m-2,m); }
+int main(){
+    cout<<modInverse(3,7)<<"\n"; // 5
+}
+```
+
+--- Problem 141 ---
+TITLE: Chinese Remainder Theorem
+DIFFICULTY: Hard
+PROBLEM: Find x such that x ≡ r1 (mod m1) and x ≡ r2 (mod m2).
+INPUT: r1=2, m1=3, r2=3, m2=5
+OUTPUT: 8 (8≡2 mod 3, 8≡3 mod 5)
+REASONING:
+Step 1: Extended GCD to find solution.
+Step 2: M = m1*m2 = 15. x = r1*M1*y1 + r2*M2*y2 where M1=M/m1=5, M2=M/m2=3.
+Step 3: y1=inv(5,3)=2. y2=inv(3,5)=2. x=2*5*2+3*3*2=20+18=38≡8 mod 15.
+CODE:
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+long long extGcd(long long a,long long b,long long& x,long long& y){
+    if(b==0){x=1;y=0;return a;}
+    long long x1,y1; long long g=extGcd(b,a%b,x1,y1);
+    x=y1; y=x1-(a/b)*y1; return g;
+}
+long long crt(long long r1,long long m1,long long r2,long long m2){
+    long long x,y; extGcd(m1,m2,x,y);
+    long long M=m1*m2;
+    return ((r2-r1)*x%M*m1+r1)%M;
+}
+int main(){cout<<crt(2,3,3,5)<<"\n";} // 8
+```

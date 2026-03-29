@@ -1,10 +1,15 @@
-algoenv/
+# Python
 __pycache__/
 *.pyc
-*.pth
+
+# Virtual env
+algoenv/
+venv/
+
+# Model checkpoints
+checkpoints/
 *.pt
-*.ckpt
-*.bin
-data/
-*.log
+
+# OS
 .DS_Store
+Thumbs.db
